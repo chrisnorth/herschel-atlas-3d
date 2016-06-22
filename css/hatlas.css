@@ -16,12 +16,20 @@
     width:100%;
     height:100%;
 }
-.svg-container {
+.svg-container, .buttons-container {
     display: inline-block;
     position: relative;
+    float:left;
     width: 100%;
     height:100%;
     /*padding-bottom: 100%; aspect ratio */
     vertical-align: top;
     overflow: hidden;
+    border: solid black 1px;
+}
+#div-z-down{
+    float:left;
+}
+#div-z-up{
+    float:right;
 }
