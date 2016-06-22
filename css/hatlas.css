@@ -27,6 +27,24 @@
     overflow: hidden;
     border: solid black 1px;
 }
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+/*.dot {
+  stroke: #000;
+}*/
+
+.axis-label{
+    font-size:1.5em;
+}
+
+.tick line {
+    opacity:1;
+}
 #div-z-down{
     float:left;
 }

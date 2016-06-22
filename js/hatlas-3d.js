@@ -21,7 +21,7 @@ HATLASPlot.prototype.scaleRA = function(RA){
     return 0.5*(RA-this.dCtr.RA)/this.dRng.RA;
 }
 HATLASPlot.prototype.scaleDec = function(Dec){
-    return (Dec-this.dCtr.Dec)/this.dRng.Dec;
+    return 0.5*(Dec-this.dCtr.Dec)/this.dRng.Dec;
 }
 HATLASPlot.prototype.scaleZ = function(z){
     return -2*(z-this.dCtr.z)/this.dRng.z;
@@ -113,13 +113,18 @@ HATLASPlot.prototype.scaleWindow = function(){
     this.fullGraphWidth = this.winFullWidth;
     this.fullGraphHeight = this.winFullHeight;
     this.svg3dSize = Math.min(this.fullGraphHeight,this.fullGraphWidth/2.)
+    this.margin3d={left:0,top:0,bottom:0,right:0};
+    this.margin2d={left:60,top:20,bottom:60,right:20}
     this.svg3dHeight = this.svg3dSize;
     this.svg3dWidth = this.svg3dSize;
+    this.svg3dPlotHeight = this.svg3dHeight - this.margin3d.top - this.margin3d.bottom;
+    this.svg3dPlotWidth = this.svg3dWidth - this.margin3d.left - this.margin3d.right;
+
     this.svg2dSize = Math.min(0.9*this.fullGraphHeight,0.9*this.fullGraphWidth/2.)
     this.svg2dHeight = this.svg2dSize;
     this.svg2dWidth = this.svg2dSize;
-    this.margin3d={left:0,top:0,bottom:0,right:0};
-    this.margin2d={left:0,top:0,bottom:0,right:0}
+    this.svg2dPlotHeight = this.svg2dHeight - this.margin2d.top - this.margin2d.bottom;
+    this.svg2dPlotWidth = this.svg2dWidth - this.margin2d.left - this.margin2d.right;
 
     // data -> display
     this.xValue3d = function(d) {return d.x;}
@@ -139,14 +144,14 @@ HATLASPlot.prototype.scaleWindow = function(){
     this.xValue2d = function(d) {return d.RA;}
     this.xScale2d = d3.scale.linear()
         .domain([this.dMin.RA-0.1,this.dMax.RA+0.1])
-        .range([0, this.svg2dWidth])
+        .range([0, this.svg2dPlotWidth])
     this.xMap2d = function(d) { return ha.xScale2d(ha.xValue2d(d));}
 
     // data -> display
     this.yValue2d = function(d) {return d.Dec;}
     this.yScale2d = d3.scale.linear()
         .domain([this.dMin.Dec-0.1,this.dMax.Dec+0.1])
-        .range([0, this.svg2dHeight])
+        .range([0, this.svg2dPlotHeight])
     this.yMap2d = function(d) { return ha.yScale2d(ha.yValue2d(d));}
 }
 
@@ -158,6 +163,71 @@ HATLASPlot.prototype.filterZ = function(z1In,z2In,ax){
         return ((d[ax]<=z2)&&(d[ax]>z1));
     })
 }
+HATLASPlot.prototype.getRAAxisAngle = function(){
+    xy0=this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMin.tscl)
+    xy1=this.rdz2xy3d(this.dMax.RAscl,this.dMin.Decscl,this.dMin.tscl)
+    ang=(180./Math.PI)*Math.atan2((xy1[0]-xy0[0]),(xy1[1]-xy0[1]))
+    return ang;
+}
+HATLASPlot.prototype.getRAAxisLength = function(){
+    xy0=this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMin.tscl)
+    xy1=this.rdz2xy3d(this.dMax.RAscl,this.dMin.Decscl,this.dMin.tscl)
+    length=Math.sqrt((xy1[0]-xy0[0])*(xy1[0]-xy0[0]) + (xy1[1]-xy0[1])*(xy1[1]-xy0[1]))
+    return length;
+}
+HATLASPlot.prototype.getDecAxisAngle = function(){
+    xy0=this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMin.tscl)
+    xy1=this.rdz2xy3d(this.dMin.RAscl,this.dMax.Decscl,this.dMin.tscl)
+    ang=(180./Math.PI)*Math.atan2((xy1[1]-xy0[1]),(xy1[0]-xy0[0]))
+    return ang;
+}
+HATLASPlot.prototype.getDecAxisLength = function(){
+    xy0=this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMin.tscl)
+    xy1=this.rdz2xy3d(this.dMin.RAscl,this.dMax.Decscl,this.dMin.tscl)
+    length=Math.sqrt((xy1[0]-xy0[0])*(xy1[0]-xy0[0]) + (xy1[1]-xy0[1])*(xy1[1]-xy0[1]))
+    return length;
+}
+HATLASPlot.prototype.getZAxisAngle = function(){
+    // xy0=this.xScale3d(this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMin.tscl))
+    // xy1=this.xScale3d(this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMax.tscl))
+    // ang=(180./Math.PI)*Math.atan2((xy1[1]-xy0[1]),(xy1[0]-xy0[0]))
+    x0=this.xScale3d(this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMin.tscl)[0])
+    x1=this.xScale3d(this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMax.tscl)[0])
+    y0=this.yScale3d(this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMin.tscl)[1])
+    y1=this.yScale3d(this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMax.tscl)[1])
+    ang=(180./Math.PI)*Math.atan2((y1-y0),(x1-x0)) + 90.
+    return ang;
+}
+HATLASPlot.prototype.getZAxisLength = function(){
+    x0=this.xScale3d(this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMin.tscl)[0])
+    x1=this.xScale3d(this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMax.tscl)[0])
+    y0=this.yScale3d(this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMin.tscl)[1])
+    y1=this.yScale3d(this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMax.tscl)[1])
+    length=Math.sqrt((y1-y0)*(y1-y0) + (x1-x0)*(x1-x0))
+    return length;
+}
+HATLASPlot.prototype.getAstroScales = function(){
+    var ha=this;
+    // RA/Dec/z -> display
+    this.RAValue3d = function(d) {return d.RA;}
+    this.RAScale3d = d3.scale.linear()
+        .domain([this.dMin.RA,this.dMax.RA])
+        .range([0, this.getRAAxisLength()])
+    this.RAMap3d = function(d) { return ha.RAScale3d(ha.RAValue3d(d));}
+    //
+    this.DecValue3d = function(d) {return d.Dec;}
+    this.DecScale3d = d3.scale.linear()
+        .domain([this.dMin.Dec,this.dMax.Dec])
+        .range([0, this.getDecAxisLength()])
+    this.DecMap3d = function(d) { return ha.DecScale3d(ha.DecValue3d(d));}
+    //
+    this.ZValue3d = function(d) {return d.z;}
+    this.ZScale3d = d3.scale.linear()
+        .domain([this.dMin.z,this.dMax.z])
+        .range([0, this.getZAxisLength()])
+    this.ZMap3d = function(d) { return ha.ZScale3d(ha.ZValue3d(d));}
+}
+
 HATLASPlot.prototype.make3dPlot = function(){
     var ha=this;
     // this.color=d3.scale.category20();
@@ -174,6 +244,54 @@ HATLASPlot.prototype.make3dPlot = function(){
     this.svg3d = this.svg3dCont.append("svg")
         .style("width",this.svg3dWidth)
         .style("height",this.svg3dHeight)
+
+    this.svg3d.append("line")
+        .attr("x1",this.xScale3d(this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMin.tscl)[0]))
+        .attr("x2",this.xScale3d(this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMax.tscl)[0]))
+        .attr("y1",this.yScale3d(this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMin.tscl)[1]))
+        .attr("y2",this.yScale3d(this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMax.tscl)[1]))
+        .attr("stroke","black")
+        .attr("stroke-width",2);
+    //axes
+    this.getAstroScales();
+    this.RAAxis3d = d3.svg.axis()
+            .scale(this.xScale3d)
+            .orient("bottom")
+            .innerTickSize(-ha.svg3dPlotHeight)
+            .outerTickSize(1);
+    this.DecAxis3d = d3.svg.axis()
+            .scale(this.yScale3d)
+            .orient("left")
+            .innerTickSize(-ha.svg3dPlotHeight)
+            .outerTickSize(1);
+    this.ZAxis3d = d3.svg.axis()
+            .scale(ha.ZScale3d)
+            .orient("left")
+            .innerTickSize([5])
+            .outerTickSize(0);
+
+    this.svg3d.append("g")
+        .attr("class", "z-axis axis")
+        .attr("transform", "translate("+
+            this.xScale3d(this.rdz2xy3d(this.dMax.RAscl,this.dMax.Decscl,this.dMax.tscl)[0])+"," +
+            (this.yScale3d(this.rdz2xy3d(this.dMax.RAscl,this.dMax.Decscl,this.dMax.tscl)[1])) +
+             ") rotate("+(this.getZAxisAngle())+")");
+            //  ") rotate("+(-90)+")");
+    this.svg3d.select(".z-axis.axis").call(this.ZAxis3d)
+    this.svg3d.selectAll(".z-axis.axis .tick text")
+        .attr("transform","rotate("+(-this.getZAxisAngle())+")")
+        .attr("dy",15)
+        .attr("dx",20);
+    this.svg3d.select(".z-axis.axis").append("text")
+        .attr("transform","rotate("+(90)+")")
+        .attr("class", "z-axis axis-label")
+        .attr("x", this.getZAxisLength()/2)
+        .attr("y",0)
+        .attr("dy", "40px")
+        .style("text-anchor", "middle")
+        .text("Lookback Time (billion years)");
+
+    //
     this.g3d = this.svg3d.append("g")
         .attr("transform", "translate(" + this.margin3d.left + "," +
             this.margin3d.top + ")")
@@ -259,11 +377,86 @@ HATLASPlot.prototype.make2dPlot = function(){
     var ha=this;
     this.svg2dCont = d3.select("#svg-container-2d")
     this.svg2dCont
-        .style("width",this.svg2dWidth)
-        .style("height",this.svg2dHeight);
+        .style("width",this.svg2dSize)
+        .style("height",this.svg2dSize);
     this.svg2d = this.svg2dCont.append("svg")
         .style("width",this.svg2dWidth)
         .style("height",this.svg2dHeight)
+
+    this.RAAxis2d = d3.svg.axis()
+            .scale(this.xScale2d)
+            .orient("bottom")
+            .innerTickSize(-10)
+            .outerTickSize(0);
+    this.DecAxis2d = d3.svg.axis()
+            .scale(this.yScale2d)
+            .orient("left")
+            .innerTickSize(-10)
+            .outerTickSize(0);
+    //
+    this.svg2d.append("g")
+        .attr("class", "x-axis axis")
+        .attr("transform", "translate("+this.margin2d.left+"," +
+            (this.margin2d.top + this.svg2dPlotHeight) + ")");
+    this.svg2d.select(".x-axis.axis").call(this.RAAxis2d)
+    this.svg2d.select(".x-axis.axis").append("text")
+        .attr("class", "x-axis axis-label")
+        .attr("x", this.svg2dPlotHeight/2)
+        .attr("y",10)
+        .attr("dy", "30px")
+        .style("text-anchor", "middle")
+        .text("Right Ascension");
+
+    this.svg2d.append("g")
+        .attr("class", "y-axis axis")
+        .attr("transform", "translate("+this.margin2d.left+"," +
+            (this.margin2d.top) + ")");
+    this.svg2d.select(".y-axis.axis").call(this.DecAxis2d)
+    this.svg2d.select(".y-axis.axis").append("text")
+        .attr("class", "y-axis axis-label")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0)
+        .attr("x",-this.svg2dPlotWidth/2)
+        .attr("dy", "-30px")
+        .style("text-anchor", "middle")
+        .text("Declination");
+    // this.svg2d.select(".x-axis.axis")
+    //     .append("line")
+    //     .attr("class","x-axis axis-line")
+    //     .attr("x1",0).attr("x2",this.svg2dPlotWidth)
+    //     .attr("y1",0).attr("y2",0)
+    //     .style("stroke","rgb(200,200,200)").attr("stroke-width",2)
+    //     .attr("opacity",1);
+    //
+    this.svg2d.append("g")
+        .attr("class", "border")
+        .attr("transform", "translate("+this.margin2d.left+"," +
+            (this.margin2d.top) +")");
+    this.svg2d.select(".border")
+        .append("line")
+        .attr("x1",0).attr("x2",this.svg2dPlotWidth)
+        .attr("y1",0).attr("y2",0)
+        .style("stroke","rgb(0,0,0)").attr("stroke-width",2)
+        .attr("opacity",1);
+    this.svg2d.select(".border")
+        .append("line")
+        .attr("x1",0).attr("x2",this.svg2dPlotWidth)
+        .attr("y1",this.svg2dPlotHeight).attr("y2",this.svg2dPlotHeight)
+        .style("stroke","rgb(0,0,0)").attr("stroke-width",2)
+        .attr("opacity",1);
+    this.svg2d.select(".border")
+        .append("line")
+        .attr("x1",this.svg2dPlotWidth).attr("x2",this.svg2dPlotWidth)
+        .attr("y1",0).attr("y2",this.svg2dPlotHeight)
+        .style("stroke","rgb(0,0,0)").attr("stroke-width",2)
+        .attr("opacity",1);
+    this.svg2d.select(".border")
+        .append("line")
+        .attr("x1",0).attr("x2",0)
+        .attr("y1",0).attr("y2",this.svg2dPlotHeight)
+        .style("stroke","rgb(0,0,0)").attr("stroke-width",2)
+        .attr("opacity",1);
+
     this.g2d = this.svg2d.append("g")
         .attr("transform", "translate(" + this.margin2d.left + "," +
             this.margin2d.top + ")")
