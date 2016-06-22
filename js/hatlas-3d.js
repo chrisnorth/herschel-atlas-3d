@@ -2,7 +2,7 @@ function HATLASPlot(){
     return this;
 }
 
-HATLASPlot.prototype.rdz2xy = function (RAscl,Decscl,z) {
+HATLASPlot.prototype.rdz2xy3d = function (RAscl,Decscl,z) {
     //convert from RA,DEC,z to isometric projects
     // from https://en.wikipedia.org/wiki/Isometric_projection
     x = Math.sqrt(1/2) * (RAscl - z)
@@ -48,7 +48,7 @@ HATLASPlot.prototype.drawGraphInit = function(){
         }
         ha.dataAll.forEach(function(d){
             ha.scaleData(d);
-            [d.x,d.y]=ha.rdz2xy(d.RAscl,d.Decscl,d.tscl);
+            [d.x,d.y]=ha.rdz2xy3d(d.RAscl,d.Decscl,d.tscl);
         })
         //calculate danges for
         for (var a=0;a<axes.length;a++){
@@ -82,7 +82,8 @@ HATLASPlot.prototype.drawGraphInit = function(){
         //     RA: 0.5*(ha.dataRange.RAmin + ha.dataRange.RAmin)
         // }
         ha.scaleWindow();
-        ha.makePlot()
+        ha.make3dPlot();
+        ha.make2dPlot();
     });
 }
 
@@ -93,81 +94,98 @@ HATLASPlot.prototype.scaleWindow = function(){
     this.winAspect = this.winFullWidth/this.winFullHeight;
     this.fullGraphWidth = this.winFullWidth;
     this.fullGraphHeight = this.winFullHeight;
-    this.svgSize = Math.min(this.fullGraphHeight,this.fullGraphWidth)
-    this.svgHeight = this.svgSize;
-    this.svgWidth = this.svgSize;
-    this.margin={left:0,top:0,bottom:0,right:0}
+    this.svg3dSize = Math.min(this.fullGraphHeight,this.fullGraphWidth/2.)
+    this.svg3dHeight = this.svg3dSize;
+    this.svg3dWidth = this.svg3dSize;
+    this.svg2dSize = Math.min(0.9*this.fullGraphHeight,0.9*this.fullGraphWidth/2.)
+    this.svg2dHeight = this.svg2dSize;
+    this.svg2dWidth = this.svg2dSize;
+    this.margin3d={left:0,top:0,bottom:0,right:0};
+    this.margin2d={left:0,top:0,bottom:0,right:0}
 
-    // data -> value
-    this.xValue = function(d) {return d.x;}
-    // value -> display
-    this.xScale = d3.scale.linear()
+    // data -> display
+    this.xValue3d = function(d) {return d.x;}
+    this.xScale3d = d3.scale.linear()
         .domain([this.dMin.x-0.1,this.dMax.x+0.1])
-        .range([0, this.svgWidth])
-    // data -> display
-    this.xMap = function(d) { return ha.xScale(ha.xValue(d));}
+        .range([0, this.svg3dWidth])
+    this.xMap3d = function(d) { return ha.xScale3d(ha.xValue3d(d));}
 
-    // data -> value
-    this.yValue = function(d) {return d.y;}
-    // value -> display
-    this.yScale = d3.scale.linear()
-        .domain([this.dMin.y-0.1,this.dMax.y+0.1])
-        .range([0, this.svgHeight])
     // data -> display
-    this.yMap = function(d) { return ha.yScale(ha.yValue(d));}
+    this.yValue3d = function(d) {return d.y;}
+    this.yScale3d = d3.scale.linear()
+        .domain([this.dMin.y-0.1,this.dMax.y+0.1])
+        .range([0, this.svg3dHeight])
+    this.yMap3d = function(d) { return ha.yScale3d(ha.yValue3d(d));}
+
+    // data -> display
+    this.xValue2d = function(d) {return d.RA;}
+    this.xScale2d = d3.scale.linear()
+        .domain([this.dMin.RA-0.1,this.dMax.RA+0.1])
+        .range([0, this.svg2dWidth])
+    this.xMap2d = function(d) { return ha.xScale2d(ha.xValue2d(d));}
+
+    // data -> display
+    this.yValue2d = function(d) {return d.Dec;}
+    this.yScale2d = d3.scale.linear()
+        .domain([this.dMin.Dec-0.1,this.dMax.Dec+0.1])
+        .range([0, this.svg2dHeight])
+    this.yMap2d = function(d) { return ha.yScale2d(ha.yValue2d(d));}
 }
 
 HATLASPlot.prototype.filterZ = function(z1In,z2In,ax){
     if (ax==null){ax="z"}
     var z1 = (z1In) ? z1In : 0
     var z2 = (z2In) ? z2In : 0.01
-    console.log(this.dataAll,z2);
     return this.dataAll.filter(function(d){
         return ((d[ax]<=z2)&&(d[ax]>z1));
     })
 }
-HATLASPlot.prototype.makePlot = function(){
+HATLASPlot.prototype.make3dPlot = function(){
     var ha=this;
     // this.color=d3.scale.category20();
     // this.cValue = function(d) {return d.t;};
-    this.color = d3.scale.linear()
+    this.color3d = d3.scale.linear()
          .domain([ha.dMin.t,ha.dMax.t])
          .range(["#000000","#ff0000"]);
-    this.cValue = function(d) {return d.t;};
-    this.dotsize=1;
-    svgcont = d3.select("div#graphcontainer").append("div")
-        .attr("id","svg-container")
-        .attr("width",this.svgWidth)
-        .attr("height",this.svgHeight)
+    this.cValue3d = function(d) {return d.t;};
+    this.dotsize3d=1;
+    svg3dCont = d3.select("div#graphcontainer").append("div")
+        .attr("id","svg-container-3d")
+        .style("width",this.svg3dWidth)
+        .style("height",this.svg3dHeight)
+        .style("border","solid black 1px")
         .classed("svg-container",true);
-    this.svg = d3.select(".svg-container").append("svg")
-        .attr("width",this.svgWidth)
-        .attr("height",this.svgHeight)
-    this.svg.append("g")
-        .attr("transform", "translate(" + this.margin.left + "," +
-            this.margin.top + ")")
-    this.dataFilt = this.filterZ(ha.dMin.t,ha.dMax.t,'t');
+    this.svg3d = svg3dCont.append("svg")
+        .style("width",this.svg3dWidth)
+        .style("height",this.svg3dHeight)
+    this.svg3d.append("g")
+        .attr("transform", "translate(" + this.margin3d.left + "," +
+            this.margin3d.top + ")")
     // this.dataFilt = this.dataAll;
     // console.log(this.dataFilt);
-    this.svg.selectAll(".dot")
-        .data(this.dataFilt)
+
+    // filter data
+    this.dataFilt3d = this.filterZ(ha.dMin.t,ha.dMax.t,'t');
+    // add dots
+    this.svg3d.selectAll(".dot")
+        .data(this.dataFilt3d)
         .enter()
         .append("circle")
-        .attr("r",this.dotsize)
-        .attr("cx",ha.xMap)
-        .attr("cy",ha.yMap)
-        .style("fill", function(d){return ha.color(ha.cValue(d));})
+        .attr("r",this.dotsize3d)
+        .attr("cx",ha.xMap3d)
+        .attr("cy",ha.yMap3d)
+        .style("fill", function(d){return ha.color3d(ha.cValue3d(d));})
         .attr("opacity",0.5);
     // top line
     var corners={
-        x0y0z0:ha.rdz2xy(ha.dMin.RAscl,ha.dMin.Decscl,ha.dMin.tscl),
-        x1y0z0:ha.rdz2xy(ha.dMax.RAscl,ha.dMin.Decscl,ha.dMin.tscl),
-        x0y1z0:ha.rdz2xy(ha.dMin.RAscl,ha.dMax.Decscl,ha.dMin.tscl),
-        x0y0z1:ha.rdz2xy(ha.dMin.RAscl,ha.dMin.Decscl,ha.dMax.tscl),
-        x1y1z0:ha.rdz2xy(ha.dMax.RAscl,ha.dMax.Decscl,ha.dMin.tscl),
-        x0y1z1:ha.rdz2xy(ha.dMin.RAscl,ha.dMax.Decscl,ha.dMax.tscl),
-        x1y0z1:ha.rdz2xy(ha.dMax.RAscl,ha.dMin.Decscl,ha.dMax.tscl),
-        x1y1z1:ha.rdz2xy(ha.dMax.RAscl,ha.dMax.Decscl,ha.dMax.tscl)
+        x0y0z0:ha.rdz2xy3d(ha.dMin.RAscl,ha.dMin.Decscl,ha.dMin.tscl),
+        x1y0z0:ha.rdz2xy3d(ha.dMax.RAscl,ha.dMin.Decscl,ha.dMin.tscl),
+        x0y1z0:ha.rdz2xy3d(ha.dMin.RAscl,ha.dMax.Decscl,ha.dMin.tscl),
+        x0y0z1:ha.rdz2xy3d(ha.dMin.RAscl,ha.dMin.Decscl,ha.dMax.tscl),
+        x1y1z0:ha.rdz2xy3d(ha.dMax.RAscl,ha.dMax.Decscl,ha.dMin.tscl),
+        x0y1z1:ha.rdz2xy3d(ha.dMin.RAscl,ha.dMax.Decscl,ha.dMax.tscl),
+        x1y0z1:ha.rdz2xy3d(ha.dMax.RAscl,ha.dMin.Decscl,ha.dMax.tscl),
+        x1y1z1:ha.rdz2xy3d(ha.dMax.RAscl,ha.dMax.Decscl,ha.dMax.tscl)
     };
     ax=['x','y','z'];
     var lines={
@@ -185,33 +203,68 @@ HATLASPlot.prototype.makePlot = function(){
         y1z1:['x0y1z1','x1y1z1']
     }
     for (l in lines){
-        // console.log(l,lines[l][0],corners[lines[l][0]],corners[lines[l][0]][0],ha.xScale(corners[lines[l][0]][0]));
-        this.svg.append("line")
-            .attr("x1",ha.xScale(corners[lines[l][0]][0]))
-            .attr("x2",ha.xScale(corners[lines[l][1]][0]))
-            .attr("y1",ha.yScale(corners[lines[l][0]][1]))
-            .attr("y2",ha.yScale(corners[lines[l][1]][1]))
+        // console.log(l,lines[l][0],corners[lines[l][0]],corners[lines[l][0]][0],ha.xScale3d(corners[lines[l][0]][0]));
+        this.svg3d.append("line")
+            .attr("x1",ha.xScale3d(corners[lines[l][0]][0]))
+            .attr("x2",ha.xScale3d(corners[lines[l][1]][0]))
+            .attr("y1",ha.yScale3d(corners[lines[l][0]][1]))
+            .attr("y2",ha.yScale3d(corners[lines[l][1]][1]))
             .style("stroke","black");
     }
-    this.svg.append("line")
-        .attr("x1",0).attr("x2",ha.svgWidth)
-        .attr("y1",0).attr("y2",0)
-        .style("stroke","rgb(200,200,200)").attr("stroke-width",5)
-    // bottom line
-    this.svg.append("line")
-        .attr("x1",0).attr("x2",ha.svgWidth)
-        .attr("y1",ha.svgHeight).attr("y2",ha.svgHeight)
-        .style("stroke","rgb(200,200,200)").attr("stroke-width",5)
-    // left line
-    this.svg.append("line")
-        .attr("x1",0).attr("x2",0)
-        .attr("y1",0).attr("y2",ha.svgHeight)
-        .style("stroke","rgb(200,200,200)").attr("stroke-width",5)
-    // right line
-    this.svg.append("line")
-        .attr("x1",ha.svgWidth).attr("x2",ha.svgWidth)
-        .attr("y1",0).attr("y2",ha.svgHeight)
-        .style("stroke","rgb(200,200,200)").attr("stroke-width",5)
+    // add border
+    // this.svg.append("line")
+    //     .attr("x1",0).attr("x2",ha.svg3dWidth)
+    //     .attr("y1",0).attr("y2",0)
+    //     .style("stroke","rgb(200,200,200)").attr("stroke-width",5)
+    // // bottom line
+    // this.svg.append("line")
+    //     .attr("x1",0).attr("x2",ha.svg3dWidth)
+    //     .attr("y1",ha.svg3dHeight).attr("y2",ha.svg3dHeight)
+    //     .style("stroke","rgb(200,200,200)").attr("stroke-width",5)
+    // // left line
+    // this.svg.append("line")
+    //     .attr("x1",0).attr("x2",0)
+    //     .attr("y1",0).attr("y2",ha.svg3dHeight)
+    //     .style("stroke","rgb(200,200,200)").attr("stroke-width",5)
+    // // right line
+    // this.svg.append("line")
+    //     .attr("x1",ha.svg3dWidth).attr("x2",ha.svg3dWidth)
+    //     .attr("y1",0).attr("y2",ha.svg3dHeight)
+    //     .style("stroke","rgb(200,200,200)").attr("stroke-width",5)
+}
+
+HATLASPlot.prototype.make2dPlot = function(){
+    var ha=this;
+    svg2dCont = d3.select("div#graphcontainer").append("div")
+        .attr("id","svg-container-2d")
+        .style("width",this.svg2dWidth)
+        .style("height",this.svg2dHeight)
+        .style("border","solid black 1px")
+        .classed("svg-container",true);
+    this.svg2d = svg2dCont.append("svg")
+        .style("width",this.svg2dWidth)
+        .style("height",this.svg2dHeight)
+    this.svg2d.append("g")
+        .attr("transform", "translate(" + this.margin2d.left + "," +
+            this.margin2d.top + ")")
+    this.dataFilt2d = this.filterZ(ha.dMin.t,ha.dMin.t + 0.1*ha.dRng.t,'t');
+
+    this.color2d = d3.scale.linear()
+         .domain([ha.dMin.t,ha.dMax.t])
+         .range(["#000000","#ff0000"]);
+    this.cValue2d = function(d) {return d.t;};
+    this.dotsize2d=3;
+
+    this.svg2d.selectAll(".dot")
+        .data(this.dataFilt2d)
+        .enter()
+        .append("circle")
+        .attr("r",this.dotsize2d)
+        .attr("cx",ha.xMap2d)
+        .attr("cy",ha.yMap2d)
+        .style("fill", "black")
+        .attr("opacity",0.5);
+
 }
 
 hap = new HATLASPlot();
