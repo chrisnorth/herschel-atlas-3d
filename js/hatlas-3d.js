@@ -375,6 +375,13 @@ HATLASPlot.prototype.make2dPlot = function(){
     this.svg2d = this.svg2dCont.append("svg")
         .style("width",this.svg2dWidth)
         .style("height",this.svg2dHeight)
+    // define blur
+    this.filter = this.svg2d.append("defs")
+        .append("filter")
+            .attr("id", "blur")
+        .append("feGaussianBlur")
+            .attr("in","SourceGraphic")
+            .attr("stdDeviation", 2);
     //define axis function
     this.RAAxis2d = d3.svg.axis()
             .scale(this.xScale2d)
@@ -442,10 +449,10 @@ HATLASPlot.prototype.make2dPlot = function(){
         .attr("y1",0).attr("y2",this.svg2dPlotHeight)
         .style("stroke","rgb(0,0,0)").attr("stroke-width",2)
         .attr("opacity",1);
-    this.g2d = this.svg2d.append("g")
+    this.g2dHiZ = this.svg2d.append("g")
         .attr("transform", "translate(" + this.margin2d.left + "," +
             this.margin2d.top + ")")
-    this.g2dHiZ = this.svg2d.append("g")
+    this.g2d = this.svg2d.append("g")
         .attr("transform", "translate(" + this.margin2d.left + "," +
             this.margin2d.top + ")")
     // Filter Data
@@ -460,6 +467,21 @@ HATLASPlot.prototype.make2dPlot = function(){
     this.cValue2d = function(d) {return d.t;};
     this.dotsize2d=3;
 
+    //add BG galaxies
+    this.dots2dHiZ = this.g2dHiZ.selectAll(".dot")
+        .data(this.dataHiZ);
+    this.dots2dHiZ.enter()
+        .append("circle")
+        .attr("class","dot")
+        .attr("r",this.dotsize2d+2)
+        .attr("cx",ha.xMap2d)
+        .attr("cy",ha.yMap2d)
+        .style("fill", "red")
+        .style("stroke","rgba(255,255,255,0)")
+        .style("stroke-width",2)
+        .attr("filter","url(#blur)")
+        .attr("opacity",function(d){return ha.get2dOpacityHiZ(d)});
+    // add galaxies
     this.dots2d = this.g2d.selectAll(".dot")
         .data(this.dataFilt2d);
     this.dots2d
@@ -470,18 +492,8 @@ HATLASPlot.prototype.make2dPlot = function(){
         .attr("cx",ha.xMap2d)
         .attr("cy",ha.yMap2d)
         .style("fill", "blue")
+        // .attr("filter","url(#blur)")
         .attr("opacity",function(d){return ha.get2dOpacity(d)});
-    //add BG galaxies
-    this.dots2dHiZ = this.g2dHiZ.selectAll(".dot")
-        .data(this.dataHiZ);
-    this.dots2dHiZ.enter()
-        .append("circle")
-        .attr("class","dot")
-        .attr("r",this.dotsize2d)
-        .attr("cx",ha.xMap2d)
-        .attr("cy",ha.yMap2d)
-        .style("fill", "red")
-        .attr("opacity",function(d){return ha.get2dOpacityHiZ(d)});
     // add 2d slices
     this.slices = this.svg3d.append("g")
         .attr("transform", "translate(" + this.margin2d.left + "," +
