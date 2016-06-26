@@ -523,38 +523,66 @@ HATLASPlot.prototype.moveSlice = function(){
 }
 HATLASPlot.prototype.addButtons = function(){
     var ha=this;
-    this.buttons2d = d3.select("#buttons-container")
-        .style("width",this.svg2dWidth)
-        .style("height","auto");
-    this.zDown = d3.select("#button-z-down");
-    this.zUp = d3.select("#button-z-up");
-    this.zDown.on("click",function(){ha.decreaseZ();});
-    this.zUp.on("click",function(){ha.increaseZ();});
+    // this.buttons2d = d3.select("#buttons-container")
+    //     .style("height","auto");
+    // this.zDown = d3.select("#button-z-down");
+    // this.zUp = d3.select("#button-z-up");
+    // this.zDown.on("click",function(){ha.decreaseZ();});
+    // this.zUp.on("click",function(){ha.increaseZ();});
+    this.divDown = d3.select("div#button-left")
+    this.divUp = d3.select("div#button-right")
+    this.divDown
+        .style("width",this.divDown.style("height"));
+    this.divDown.select("img")
+        .on("click",function(){ha.decreaseZ();});
+    this.divUp
+        .style("width",this.divUp.style("height"));
+    this.divUp.select("img")
+        .on("click",function(){ha.increaseZ();});
+    this.updateArrows();
+}
+HATLASPlot.prototype.updateArrows = function(){
+    if (this.tMin2d<=this.dMin.t){
+        this.divDown.style({"opacity":0.2,"cursor":"default"})
+    }else{
+        this.divDown.style({"opacity":1,"cursor":"pointer"})}
+    if (this.tMax2d>=this.dMax.t){
+        this.divUp.style({"opacity":0.2,"cursor":"default"})
+    }else{this.divUp.style({"opacity":1,"cursor":"pointer"})}
 }
 HATLASPlot.prototype.addNumbers = function(){
     this.numbers = d3.select("#div-numbers")
-        .style("width",this.svg2dWidth)
+        // .style("width",this.svg2dWidth)
         .style("height","auto");
     this.numbers.append("span")
         .attr("id","t-range")
         .attr("class","span-num")
         .html(parseFloat(this.tMin2d.toPrecision(3))+'-'+parseFloat(this.tMax2d.toPrecision(3)))
     this.numbers.append("span")
+        .attr("id","num-sp")
+        .html("<br/>")
+    this.numbers.append("span")
         .attr("id","z-range")
         .attr("class","span-num")
         .html(parseFloat(this.zMin2d.toPrecision(3))+'-'+parseFloat(this.zMax2d.toPrecision(3)))
+    this.buttons2d = d3.select("#buttons-container")
+    this.buttons2d.style({
+        "margin-left":(this.svg2dWidth-this.buttons2d.node().getBoundingClientRect()["width"])/2+"px"
+    });
+    this.updateNumbers();
 }
 HATLASPlot.prototype.updateNumbers = function(){
     this.numbers.select("span#t-range")
-        .html("Lookback Time:"+parseFloat(this.tMin2d.toPrecision(3))+'-'+parseFloat(this.tMax2d).toPrecision(3))
+        .html(parseFloat(this.tMin2d.toPrecision(3))+'-'+parseFloat(this.tMax2d).toPrecision(3)+" bn yrs")
     this.numbers.select("span#z-range")
-        .html("Redshift:"+parseFloat(this.zMin2d.toPrecision(3))+'-'+parseFloat(this.zMax2d).toPrecision(3))
+        .html("z = "+parseFloat(this.zMin2d.toPrecision(3))+'-'+parseFloat(this.zMax2d).toPrecision(3))
 }
 HATLASPlot.prototype.decreaseZ = function(){
     if (this.tMin2d<=this.dMin.t){
         console.log("at minimum");
         return
     }else{
+        this.divDown.attr("opacity",1);
         this.tMin2d -= this.tRng2d;
         this.tMax2d -= this.tRng2d;
         this.dataFilt2d = this.filterZ(this.tMin2d,this.tMax2d,'t');
@@ -589,13 +617,16 @@ HATLASPlot.prototype.decreaseZ = function(){
         //
         this.moveSlice();
         this.updateNumbers();
+        this.updateArrows();
     }
 }
 HATLASPlot.prototype.increaseZ = function(){
     if (this.tMax2d>=this.dMax.t){
         console.log("at maximum");
+        this.divUp.attr("opacity",0.2);
         return
     }else{
+        this.divUp.attr("opacity",1);
         this.tMin2d += this.tRng2d;
         this.tMax2d += this.tRng2d;
         this.dataFilt2d = this.filterZ(this.tMin2d,this.tMax2d,'t');
@@ -632,6 +663,7 @@ HATLASPlot.prototype.increaseZ = function(){
         //
         this.moveSlice();
         this.updateNumbers();
+        this.updateArrows();
     }
 }
 hap = new HATLASPlot();
