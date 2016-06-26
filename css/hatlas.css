@@ -27,6 +27,15 @@
     overflow: hidden;
     border: solid black 1px;
 }
+.button-RA-cont{
+    position: absolute;
+    height: 10%;
+    top:50%;
+}
+.button-RA-cont img{
+    height:100%;
+    cursor:pointer;
+}
 .buttons-container{
     width:auto;
     display: inline-block;
