@@ -67,7 +67,7 @@ HATLASPlot.prototype.drawGraphInit = function(){
             //ha.scaleData(d);
             [d.x,d.y]=ha.rdz2xy3d(d.RAscl,d.Decscl,d.tscl);
         })
-        //calculate danges for
+        //calculate ranges for
         for (var a=0;a<axes.length;a++){
             ax=axes[a]+'scl';
             // console.log(a,ax);
@@ -85,23 +85,20 @@ HATLASPlot.prototype.drawGraphInit = function(){
             ha.dRng[ax]=ha.dMax[ax] - ha.dMin[ax];
             ha.dCtr[ax]=ha.dMin[ax] + ha.dRng[ax]/2;
         }
-        // ha.dMin = {
-        //     RA:d3.min(ha.dataAll,function(d){return d.RA}),
-        //     Dec:d3.min(ha.dataAll,function(d){return d.Dec}),
-        //     Z:d3.min(ha.dataAll,function(d){return d.z}),
-        // }
-        // ha.dMax = {
-        //     RA:d3.max(ha.dataAll,function(d){return d.RA}),
-        //     Dec:d3.max(ha.dataAll,function(d){return d.Dec}),
-        //     Z:d3.max(ha.dataAll,function(d){return d.z})
-        // }
-        // ha.dataCtr = {
-        //     RA: 0.5*(ha.dataRange.RAmin + ha.dataRange.RAmin)
-        // }
+        //get data for high-z
+        if (ha.dMax.z > 2.0){
+            ha.zBgMin = 2.0
+        }else{
+            ha.zBgMin = ha.dMax.z;
+        }
+        ha.dataHiZ = ha.dataAll.filter(function(d){return (d.z > ha.zBgMin);});
+        console.log(ha.zBgMin,ha.dataHiZ);
+        //
         ha.scaleWindow();
         ha.make3dPlot();
         ha.make2dPlot();
         ha.addButtons();
+        ha.addNumbers();
     });
 }
 
@@ -155,13 +152,28 @@ HATLASPlot.prototype.scaleWindow = function(){
     this.yMap2d = function(d) { return ha.yScale2d(ha.yValue2d(d));}
 }
 
-HATLASPlot.prototype.filterZ = function(z1In,z2In,ax){
-    if (ax==null){ax="z"}
-    var z1 = (z1In) ? z1In : 0
-    var z2 = (z2In) ? z2In : 0.01
-    return this.dataAll.filter(function(d){
-        return ((d[ax]<=z2)&&(d[ax]>z1));
-    })
+HATLASPlot.prototype.filterZ = function(ax1In,ax2In,axName){
+    if (axName==null){axName="z"}
+    var ha=this;
+    var ax1 = (ax1In) ? ax1In : 0;
+    var ax2 = (ax2In) ? ax2In : 0.01;
+    this.dataAll.forEach(function(d){
+        if((d[axName]<=ax2)&&(d[axName]>ax1)){
+            //in slice
+            d.inSlice = 1;
+        }else if((d[axName]<=ax2+ha.tRng2d)&&(d[axName]>ax1-ha.tRng2d)){
+            //either side of slice
+            d.inSlice=0.5;
+        }else{
+            //nowhere near slice
+            d.inSlice=0;
+        }
+    });
+    //get z limits
+    dataFilt=this.dataAll.filter(function(d){return (d.inSlice==1);});
+    this.zMin2d = d3.min(dataFilt,function(d){return d.z});
+    this.zMax2d = d3.max(dataFilt,function(d){return d.z});
+    return dataFilt;
 }
 HATLASPlot.prototype.getRAAxisAngle = function(){
     xy0=this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMin.tscl)
@@ -206,6 +218,16 @@ HATLASPlot.prototype.getZAxisLength = function(){
     length=Math.sqrt((y1-y0)*(y1-y0) + (x1-x0)*(x1-x0))
     return length;
 }
+HATLASPlot.prototype.get3dOpacity = function(d) {
+    if(d.inSlice==1){return 1;}else{return 0.1;};
+}
+HATLASPlot.prototype.get2dOpacity = function(d) {
+    if(d.inSlice==1){return 1;}
+    else if (d.inSlice==0.5){return 0.25;};
+}
+HATLASPlot.prototype.get2dOpacityHiZ = function(d) {
+    return 0.25;
+}
 HATLASPlot.prototype.getAstroScales = function(){
     var ha=this;
     // RA/Dec/z -> display
@@ -245,14 +267,7 @@ HATLASPlot.prototype.make3dPlot = function(){
         .style("width",this.svg3dWidth)
         .style("height",this.svg3dHeight)
 
-    this.svg3d.append("line")
-        .attr("x1",this.xScale3d(this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMin.tscl)[0]))
-        .attr("x2",this.xScale3d(this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMax.tscl)[0]))
-        .attr("y1",this.yScale3d(this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMin.tscl)[1]))
-        .attr("y2",this.yScale3d(this.rdz2xy3d(this.dMin.RAscl,this.dMin.Decscl,this.dMax.tscl)[1]))
-        .attr("stroke","black")
-        .attr("stroke-width",2);
-    //axes
+    // set axis functions
     this.getAstroScales();
     this.RAAxis3d = d3.svg.axis()
             .scale(this.xScale3d)
@@ -299,17 +314,17 @@ HATLASPlot.prototype.make3dPlot = function(){
     // console.log(this.dataFilt);
 
     // filter data
-    this.dataFilt3d = this.filterZ(ha.dMin.t,ha.dMax.t,'t');
+    // this.dataFilt3d = this.filterZ(ha.dMin.t,ha.dMax.t,'t');
     // add dots
     this.g3d.selectAll(".dot")
-        .data(this.dataFilt3d)
+        .data(this.dataAll)
         .enter()
         .append("circle")
+        .attr("class","dot")
         .attr("r",this.dotsize3d)
         .attr("cx",ha.xMap3d)
         .attr("cy",ha.yMap3d)
-        .style("fill", function(d){return ha.color3d(ha.cValue3d(d));})
-        .attr("opacity",0.5);
+        .style("fill", function(d){return ha.color3d(ha.cValue3d(d));});
     // top line
     var corners={
         x0y0z0:ha.rdz2xy3d(ha.dMin.RAscl,ha.dMin.Decscl,ha.dMin.tscl),
@@ -322,29 +337,6 @@ HATLASPlot.prototype.make3dPlot = function(){
         x1y1z1:ha.rdz2xy3d(ha.dMax.RAscl,ha.dMax.Decscl,ha.dMax.tscl)
     };
     this.add3dBox(corners,"3dbox");
-    // var lines={
-    //     x0y0:['x0y0z0','x0y0z1'],
-    //     x0y1:['x0y1z0','x0y1z1'],
-    //     x1y0:['x1y0z0','x1y0z1'],
-    //     x1y1:['x1y1z0','x1y1z1'],
-    //     x0z0:['x0y0z0','x0y1z0'],
-    //     x0z1:['x0y0z1','x0y1z1'],
-    //     x1z0:['x1y0z0','x1y1z0'],
-    //     x1z1:['x1y0z1','x1y1z1'],
-    //     y0z0:['x0y0z0','x1y0z0'],
-    //     y1z0:['x0y1z0','x1y1z0'],
-    //     y0z1:['x0y0z1','x1y0z1'],
-    //     y1z1:['x0y1z1','x1y1z1']
-    // }
-    // for (l in lines){
-    //     // console.log(l,lines[l][0],corners[lines[l][0]],corners[lines[l][0]][0],ha.xScale3d(corners[lines[l][0]][0]));
-    //     this.svg3d.append("line")
-    //         .attr("x1",ha.xScale3d(corners[lines[l][0]][0]))
-    //         .attr("x2",ha.xScale3d(corners[lines[l][1]][0]))
-    //         .attr("y1",ha.yScale3d(corners[lines[l][0]][1]))
-    //         .attr("y2",ha.yScale3d(corners[lines[l][1]][1]))
-    //         .style("stroke","black");
-    // }
 }
 HATLASPlot.prototype.add3dBox = function(corners,className){
     var lines={
@@ -375,14 +367,15 @@ HATLASPlot.prototype.add3dBox = function(corners,className){
 }
 HATLASPlot.prototype.make2dPlot = function(){
     var ha=this;
-    this.svg2dCont = d3.select("#svg-container-2d")
+    //add SVG
+    this.svg2dCont = d3.select("#svg-container-2d");
     this.svg2dCont
         .style("width",this.svg2dSize)
         .style("height",this.svg2dSize);
     this.svg2d = this.svg2dCont.append("svg")
         .style("width",this.svg2dWidth)
         .style("height",this.svg2dHeight)
-
+    //define axis function
     this.RAAxis2d = d3.svg.axis()
             .scale(this.xScale2d)
             .orient("bottom")
@@ -393,7 +386,7 @@ HATLASPlot.prototype.make2dPlot = function(){
             .orient("left")
             .innerTickSize(-10)
             .outerTickSize(0);
-    //
+    //add axes
     this.svg2d.append("g")
         .attr("class", "x-axis axis")
         .attr("transform", "translate("+this.margin2d.left+"," +
@@ -420,14 +413,7 @@ HATLASPlot.prototype.make2dPlot = function(){
         .attr("dy", "-30px")
         .style("text-anchor", "middle")
         .text("Declination");
-    // this.svg2d.select(".x-axis.axis")
-    //     .append("line")
-    //     .attr("class","x-axis axis-line")
-    //     .attr("x1",0).attr("x2",this.svg2dPlotWidth)
-    //     .attr("y1",0).attr("y2",0)
-    //     .style("stroke","rgb(200,200,200)").attr("stroke-width",2)
-    //     .attr("opacity",1);
-    //
+    //add border
     this.svg2d.append("g")
         .attr("class", "border")
         .attr("transform", "translate("+this.margin2d.left+"," +
@@ -456,8 +442,10 @@ HATLASPlot.prototype.make2dPlot = function(){
         .attr("y1",0).attr("y2",this.svg2dPlotHeight)
         .style("stroke","rgb(0,0,0)").attr("stroke-width",2)
         .attr("opacity",1);
-
     this.g2d = this.svg2d.append("g")
+        .attr("transform", "translate(" + this.margin2d.left + "," +
+            this.margin2d.top + ")")
+    this.g2dHiZ = this.svg2d.append("g")
         .attr("transform", "translate(" + this.margin2d.left + "," +
             this.margin2d.top + ")")
     // Filter Data
@@ -481,18 +469,29 @@ HATLASPlot.prototype.make2dPlot = function(){
         .attr("r",this.dotsize2d)
         .attr("cx",ha.xMap2d)
         .attr("cy",ha.yMap2d)
-        .style("fill", "black")
-        .attr("opacity",0.5);
+        .style("fill", "blue")
+        .attr("opacity",function(d){return ha.get2dOpacity(d)});
+    //add BG galaxies
+    this.dots2dHiZ = this.g2dHiZ.selectAll(".dot")
+        .data(this.dataHiZ);
+    this.dots2dHiZ.enter()
+        .append("circle")
+        .attr("class","dot")
+        .attr("r",this.dotsize2d)
+        .attr("cx",ha.xMap2d)
+        .attr("cy",ha.yMap2d)
+        .style("fill", "red")
+        .attr("opacity",function(d){return ha.get2dOpacityHiZ(d)});
     // add 2d slices
     this.slices = this.svg3d.append("g")
         .attr("transform", "translate(" + this.margin2d.left + "," +
             this.margin2d.top + ")")
     ha.addSlice();
-    this.nSliceTxt = this.svg2d.append("text")
-        .attr("x",this.svg2dWidth)
-        .attr("y",this.svg2dWigth)
-        .attr("text-anchor","end")
-        .text(this.dataFilt2d.length);
+    // this.nSliceTxt = this.svg2d.append("text")
+    //     .attr("x",this.svg2dWidth)
+    //     .attr("y",this.svg2dWigth)
+    //     .attr("text-anchor","end")
+    //     .text(this.dataFilt2d.length);
 }
 HATLASPlot.prototype.getSliceCorners = function(){
     return {
@@ -510,10 +509,17 @@ HATLASPlot.prototype.addSlice = function(){
     ha=this;
     // this.sliceCorners=this.getSliceCorners()
     this.add3dBox(this.getSliceCorners(),"slice-lines");
+    this.g3d.selectAll(".dot")
+        .data(this.dataAll)
+        .attr("opacity",function(d){return ha.get3dOpacity(d)});
 }
 HATLASPlot.prototype.moveSlice = function(){
     this.svg3d.selectAll("line.slice-lines").remove()
     this.add3dBox(this.getSliceCorners(),"slice-lines");
+    //change dot opacity within slice
+    this.g3d.selectAll(".dot")
+        .data(this.dataAll)
+        .attr("opacity",function(d){return ha.get3dOpacity(d);});
 }
 HATLASPlot.prototype.addButtons = function(){
     var ha=this;
@@ -525,16 +531,33 @@ HATLASPlot.prototype.addButtons = function(){
     this.zDown.on("click",function(){ha.decreaseZ();});
     this.zUp.on("click",function(){ha.increaseZ();});
 }
+HATLASPlot.prototype.addNumbers = function(){
+    this.numbers = d3.select("#div-numbers")
+        .style("width",this.svg2dWidth)
+        .style("height","auto");
+    this.numbers.append("span")
+        .attr("id","t-range")
+        .attr("class","span-num")
+        .html(parseFloat(this.tMin2d.toPrecision(3))+'-'+parseFloat(this.tMax2d.toPrecision(3)))
+    this.numbers.append("span")
+        .attr("id","z-range")
+        .attr("class","span-num")
+        .html(parseFloat(this.zMin2d.toPrecision(3))+'-'+parseFloat(this.zMax2d.toPrecision(3)))
+}
+HATLASPlot.prototype.updateNumbers = function(){
+    this.numbers.select("span#t-range")
+        .html("Lookback Time:"+parseFloat(this.tMin2d.toPrecision(3))+'-'+parseFloat(this.tMax2d).toPrecision(3))
+    this.numbers.select("span#z-range")
+        .html("Redshift:"+parseFloat(this.zMin2d.toPrecision(3))+'-'+parseFloat(this.zMax2d).toPrecision(3))
+}
 HATLASPlot.prototype.decreaseZ = function(){
     if (this.tMin2d<=this.dMin.t){
         console.log("at minimum");
         return
     }else{
-        console.log("decrease Z");
         this.tMin2d -= this.tRng2d;
         this.tMax2d -= this.tRng2d;
         this.dataFilt2d = this.filterZ(this.tMin2d,this.tMax2d,'t');
-        console.log("dec z",this.tMin2d,this.tMax2d,this.dataFilt2d.length);
         this.dots2d = this.g2d.selectAll(".dot")
             .data(this.dataFilt2d);
         this.dots2d
@@ -545,21 +568,37 @@ HATLASPlot.prototype.decreaseZ = function(){
             .attr("r",this.dotsize2d)
             .attr("cx",this.xMap2d)
             .attr("cy",this.yMap2d)
-            .style("fill", "black")
-            .attr("opacity",0.5);
+            .style("fill", "blue")
+            .attr("opacity",function(d){return ha.get2dOpacity(d)});
         this.dots2d.exit().remove();
+
+        //
+        this.dots2dHiZ = this.g2dHiZ.selectAll(".dot")
+            .data(this.dataHiZ);
+        this.dots2dHiZ
+            .enter()
+            .append("circle")
+            .attr("class","dot");
+        this.dots2dHiZ
+            .attr("r",this.dotsize2d)
+            .attr("cx",this.xMap2d)
+            .attr("cy",this.yMap2d)
+            .style("fill", "red")
+            .attr("opacity",function(d){return ha.get2dOpacityHiZ(d)});
+        this.dots2dHiZ.exit().remove();
+        //
         this.moveSlice();
+        this.updateNumbers();
     }
 }
 HATLASPlot.prototype.increaseZ = function(){
-    if (this.tMax2d>=2*this.dMax.t){
+    if (this.tMax2d>=this.dMax.t){
         console.log("at maximum");
         return
     }else{
         this.tMin2d += this.tRng2d;
         this.tMax2d += this.tRng2d;
         this.dataFilt2d = this.filterZ(this.tMin2d,this.tMax2d,'t');
-        console.log("inc z",this.tMin2d,this.tMax2d,this.dataFilt2d.length);
         this.dots2d = this.g2d.selectAll(".dot")
             .data(this.dataFilt2d);
         this.dots2d
@@ -570,10 +609,29 @@ HATLASPlot.prototype.increaseZ = function(){
             .attr("r",this.dotsize2d)
             .attr("cx",this.xMap2d)
             .attr("cy",this.yMap2d)
-            .style("fill", "black")
-            .attr("opacity",0.5);
+            .style("fill", "blue")
+            .attr("opacity",function(d){return ha.get2dOpacity(d)});
         this.dots2d.exit().remove();
+
+        //
+        //
+        this.dots2dHiZ = this.g2dHiZ.selectAll(".dot")
+            .data(this.dataHiZ);
+        this.dots2dHiZ
+            .enter()
+            .append("circle")
+            .attr("class","dot");
+        this.dots2dHiZ
+            .attr("r",this.dotsize2d)
+            .attr("cx",this.xMap2d)
+            .attr("cy",this.yMap2d)
+            .style("fill", "red")
+            .attr("opacity",function(d){return ha.get2dOpacityHiZ(d)});
+        this.dots2dHiZ.exit().remove();
+
+        //
         this.moveSlice();
+        this.updateNumbers();
     }
 }
 hap = new HATLASPlot();

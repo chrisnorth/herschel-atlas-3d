@@ -16,7 +16,7 @@
     width:100%;
     height:100%;
 }
-.svg-container, .buttons-container {
+.svg-container, .buttons-container, .numbers {
     display: inline-block;
     position: relative;
     float:left;
@@ -27,6 +27,16 @@
     overflow: hidden;
     border: solid black 1px;
 }
+.buttons-container, .numbers {
+    height:auto;
+}
+#div-z-down{
+    float:left;
+}
+#div-z-up{
+    float:right;
+}
+
 .axis path,
 .axis line {
   fill: none;
@@ -44,10 +54,4 @@
 
 .tick line {
     opacity:1;
-}
-#div-z-down{
-    float:left;
-}
-#div-z-up{
-    float:right;
 }
