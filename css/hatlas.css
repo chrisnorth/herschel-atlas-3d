@@ -16,7 +16,7 @@
     width:100%;
     height:100%;
 }
-.svg-container, .buttons-container {
+.svg-container {
     display: inline-block;
     position: relative;
     float:left;
@@ -26,6 +26,46 @@
     vertical-align: top;
     overflow: hidden;
     border: solid black 1px;
+}
+.button-RA-cont{
+    position: absolute;
+    height: 10%;
+    top:50%;
+}
+.button-RA-cont img{
+    height:100%;
+    cursor:pointer;
+}
+.buttons-container{
+    width:auto;
+    display: inline-block;
+    position: relative;
+    float:left;
+}
+.button-cont, .numbers {
+    /*height:5%;*/
+    float:left;
+    display: inline-block;
+}
+.button-cont{
+    height:5%;
+    width:auto;
+}
+.button-cont img{
+    height:100%;
+}
+.numbers{
+    margin-left:10px;
+    margin-right:10px;
+}
+#div-z-down{
+    float:left;
+}
+#div-z-up{
+    float:right;
+}
+.button-cont{
+    float:left;
 }
 .axis path,
 .axis line {
@@ -44,10 +84,4 @@
 
 .tick line {
     opacity:1;
-}
-#div-z-down{
-    float:left;
-}
-#div-z-up{
-    float:right;
 }
