@@ -34,7 +34,7 @@ HATLASPlot.prototype.drawGraphInit = function(){
     var ha=this;
     this.setColors();
     //load data
-    d3.csv("data/HATLAS_time_core.csv", function(error, data){
+    d3.csv("data/HATLAS_time_flux_feature_GAMA15.csv", function(error, data){
         // console.log('data read')
         ha.dataAll = data
         ha.dataAll.forEach(function(d){
@@ -50,7 +50,7 @@ HATLASPlot.prototype.drawGraphInit = function(){
         ha.dRng={};
         ha.dCtr={};
         // ha.forceMin={t:0}
-        var axes=['RA','Dec','z','t']
+        var axes=['RA','Dec','z','t','SFR','F250']
         for (var a=0;a<axes.length;a++){
             ax=axes[a];
             // console.log(a,ax);
@@ -177,13 +177,17 @@ HATLASPlot.prototype.scaleWindow = function(){
         .domain([this.dMin.RA,this.dMax.RA])
         .range([0.01*this.svg2dPlotWidth,
             0.99*this.svg2dPlotWidth*this.dRng.RA/this.wRng.RA])
-
-    // data -> display
     this.yValue2d = function(d) {return d.Dec;}
     this.yScale2d = d3.scale.linear()
         .domain([this.dMin.Dec,this.dMax.Dec])
         .range([0.01*this.svg2dPlotHeight, 0.99*this.svg2dPlotHeight])
     this.yMap2d = function(d) { return ha.yScale2d(ha.yValue2d(d));}
+
+    // flux to opacity scale
+    this.fValue = function(d){return Math.log10(d.F250)}
+    this.fScale2d = d3.scale.linear()
+        .domain([Math.log10(this.dMin.F250),Math.log10(this.dMax.F250)])
+        .range([0.2,1])
 }
 HATLASPlot.prototype.scaleRAwindow = function(){
     //scale RA in window
@@ -288,13 +292,14 @@ HATLASPlot.prototype.get3dOpacity = function(d) {
     if(d.inSlice==1){return 1;}else{return 0.3;};
 }
 HATLASPlot.prototype.get2dOpacity = function(d) {
-    if((d.inSlice==1)&&(d.RA>=this.wMin.RA)&&(d.RA<=this.wMax.RA)){return 1;}
-    // else if (d.inSlice==0.5){return 0.25;}
-    else{return 0}
+    if((d.inSlice==1)&&(d.RA>=this.wMin.RA)&&(d.RA<=this.wMax.RA)){
+        return this.fScale2d(this.fValue(d));
+    }else{return 0}
 }
 HATLASPlot.prototype.get2dOpacityHiZ = function(d) {
-    if((d.RA>=this.wMin.RA)&&(d.RA<=this.wMax.RA)){return 0.5;}
-    else{return 0};
+    if((d.RA>=this.wMin.RA)&&(d.RA<=this.wMax.RA)){
+        return 0.5*this.fScale2d(this.fValue(d));
+    }else{return 0};
 }
 HATLASPlot.prototype.getAstroScales = function(){
     var ha=this;
@@ -484,12 +489,12 @@ HATLASPlot.prototype.make2dPlot = function(){
     this.dots2dHiZ.enter()
         .append("circle")
         .attr("class","dot")
-        .attr("r",this.dotsize2d+2)
+        .attr("r",this.dotsize2d+3)
         .attr("cx",ha.xMap2d)
         .attr("cy",ha.yMap2d)
         .style("fill", function(d){return ha.color2d(ha.cValue2d(d));})
         .style("stroke","rgba(255,255,255,0)")
-        .style("stroke-width",2)
+        .style("stroke-width",3)
         .attr("filter","url(#blur)")
         .attr("opacity",function(d){return ha.get2dOpacityHiZ(d)});
     // add galaxies
@@ -499,11 +504,11 @@ HATLASPlot.prototype.make2dPlot = function(){
         .enter()
         .append("circle")
         .attr("class","dot")
-        .attr("r",this.dotsize2d+2)
+        .attr("r",this.dotsize2d+3)
         .attr("cx",ha.xMap2d)
         .attr("cy",ha.yMap2d)
         .style("stroke","rgba(255,255,255,0)")
-        .style("stroke-width",2)
+        .style("stroke-width",3)
         .style("fill",function(d){return ha.color2d(ha.cValue2d(d));})
         .attr("filter","url(#blur)")
         .attr("opacity",function(d){return ha.get2dOpacity(d)});
