@@ -34,7 +34,7 @@
 }
 .button-RA-cont img{
     height:100%;
-    cursor:pointer;
+    /*cursor:pointer;*/
 }
 .buttons-container{
     width:auto;
@@ -77,11 +77,12 @@
 /*.dot {
   stroke: #000;
 }*/
-
-.axis-label{
+.axis text{
+    font-size:1em;
+}
+.axis .axis-label{
     font-size:1.5em;
 }
-
 .tick line {
     opacity:1;
 }
