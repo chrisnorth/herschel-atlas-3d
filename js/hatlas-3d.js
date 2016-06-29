@@ -183,7 +183,7 @@ HATLASPlot.prototype.scaleWindow = function(){
     this.yValue2d = function(d) {return d.Dec;}
     this.yScale2d = d3.scale.linear()
         .domain([this.dMin.Dec,this.dMax.Dec])
-        .range([0.01*this.svg2dPlotHeight, 0.99*this.svg2dPlotHeight])
+        .range([0.99*this.svg2dPlotHeight, 0.01*this.svg2dPlotHeight])
     this.yMap2d = function(d) { return ha.yScale2d(ha.yValue2d(d));}
 
     // flux to opacity scale
