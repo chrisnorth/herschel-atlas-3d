@@ -86,13 +86,13 @@ HATLASPlot.prototype.drawGraphInit = function(){
             ha.dCtr[ax]=ha.dMin[ax] + ha.dRng[ax]/2;
         }
         //get data for high-z
-        if (ha.dMax.z > 2.0){
-            ha.zBgMin = 2.0
+        if (ha.dMax.t > 10.0){
+            ha.tBgMin = 10.0
         }else{
-            ha.zBgMin = ha.dMax.z;
+            ha.tBgMin = ha.dMax.t;
         }
-        ha.dataHiZ = ha.dataAll.filter(function(d){return (d.z > ha.zBgMin);});
-        console.log(ha.zBgMin,ha.dataHiZ);
+        ha.dataHiZ = ha.dataAll.filter(function(d){return (d.t > ha.tBgMin);});
+        console.log(ha.tBgMin,ha.dataHiZ);
         //
         //
         ha.lines={
@@ -455,6 +455,12 @@ HATLASPlot.prototype.make2dPlot = function(){
         .append("feGaussianBlur")
             .attr("in","SourceGraphic")
             .attr("stdDeviation", 2);
+    this.svg2d.select("defs")
+        .append("filter")
+            .attr("id", "blurbg")
+        .append("feGaussianBlur")
+            .attr("in","SourceGraphic")
+            .attr("stdDeviation", 2);
     //define axis function
     this.RAAxis2d = d3.svg.axis()
             .scale(this.xScale2dAxis)
@@ -499,9 +505,9 @@ HATLASPlot.prototype.make2dPlot = function(){
         .attr("cx",ha.xMap2d)
         .attr("cy",ha.yMap2d)
         .style("fill", function(d){return ha.color2d(ha.cValue2d(d));})
-        .style("stroke","rgba(255,255,255,0)")
+        .style("stroke","rgba(0,0,0,0)")
         .style("stroke-width",3)
-        .attr("filter","url(#blur)")
+        .attr("filter","url(#blurbg)")
         .attr("opacity",function(d){return ha.get2dOpacityHiZ(d)});
     // add galaxies
     this.dots2d = this.g2d.selectAll(".dot")
@@ -513,7 +519,7 @@ HATLASPlot.prototype.make2dPlot = function(){
         .attr("r",this.dotsize2d+3)
         .attr("cx",ha.xMap2d)
         .attr("cy",ha.yMap2d)
-        .style("stroke","rgba(255,255,255,0)")
+        .style("stroke","rgba(0,0,0,0)")
         .style("stroke-width",3)
         .style("fill",function(d){return ha.color2d(ha.cValue2d(d));})
         .attr("filter","url(#blur)")
