@@ -207,6 +207,7 @@ HATLASPlot.prototype.scaleWindow = function(){
         .range([0.2,1])
 }
 HATLASPlot.prototype.filterData = function(){
+    // filter to return data in window
     ha=this;
     axes=['RA','Dec','t']
     this.dataAll.forEach(function(d){
@@ -225,6 +226,13 @@ HATLASPlot.prototype.filterData = function(){
     });
     this.wMin.z = d3.min(dataFilt,function(d){return d.z});
     this.wMax.z = d3.max(dataFilt,function(d){return d.z});
+    return dataFilt;
+}
+HATLASPlot.prototype.filterSDSS = function(dataIn){
+    // Filter data that has SDSS value
+    dataFilt = dataIn.filter(function(d){
+        return (d.Z_SPEC > -50);
+    });
     return dataFilt;
 }
 // HATLASPlot.prototype.setSlices = function(ax1In,ax2In,axName){
@@ -303,7 +311,8 @@ HATLASPlot.prototype.get2dOpacity = function(d) {
 }
 HATLASPlot.prototype.get2dOpacityHiZ = function(d) {
     if((d.RA>=this.wMin.RA)&&(d.RA<=this.wMax.RA)){
-        return 0.5*this.fScale2d(this.fValue(d));
+        // return 0.5*this.fScale2d(this.fValue(d));
+        return 0;
     }else{return 0};
 }
 HATLASPlot.prototype.getAstroScales = function(){
@@ -443,6 +452,44 @@ HATLASPlot.prototype.add3dBox = function(corners,className){
             .attr("class",className+" "+this.lines[l][0]+"-"+this.lines[l][1]);
     }
 }
+HATLASPlot.prototype.addDots = function(){
+    // add galaxies
+    this.dots2d = this.g2d.selectAll(".dot")
+        .data(this.dataFilt);
+    this.dots2d.enter()
+        .append("circle")
+        .attr("class","dot")
+    this.dots2d.exit().remove()
+    this.dots2d
+        .attr("r",this.dotsize2d+3)
+        .attr("cx",ha.xMap2d)
+        .attr("cy",ha.yMap2d)
+        .style("stroke","rgba(0,0,0,0)")
+        .style("stroke-width",3)
+        .style("fill",function(d){return ha.color2d(ha.cValue2d(d));})
+        .attr("filter","url(#blur)")
+        .attr("opacity",function(d){return ha.get2dOpacity(d)});
+    // add SDSS
+    this.dots2dSDSS = this.g2dSDSS.selectAll(".dot")
+        .data(this.dataSDSS)
+    this.dots2dSDSS.enter()
+        .append("circle")
+        .attr("class","dot")
+    this.dots2dSDSS.exit().remove()
+    this.dots2dSDSS
+        .attr("r",this.dotsize2d+5)
+        .attr("cx",ha.xMap2d)
+        .attr("cy",ha.yMap2d)
+        .style("stroke","rgba(255,255,0,255)")
+        .style("stroke-width",2)
+        .style("fill","rgba(0,0,0,0)")
+        .attr("opacity",0.5);
+    //style HiZ galaxies
+    this.dots2dHiZ
+        .attr("cx",this.xMap2d)
+        .attr("opacity",function(d){return ha.get2dOpacityHiZ(d)});
+
+}
 HATLASPlot.prototype.make2dPlot = function(){
     var ha=this;
     //add SVG
@@ -482,12 +529,10 @@ HATLASPlot.prototype.make2dPlot = function(){
     this.wRng.t = 0.05*ha.dRng.t;
     this.wMin.t = 0;
     this.wMax.t = this.dMin.t + this.wRng.t;
+
     this.dataFilt = this.filterData()
-    // this.setSlices(ha.wMin.t,ha.wMax.t,'t')
-    // this.color2d = d3.scale.linear()
-    //      .domain([ha.dMin.t,ha.dMax.t])
-    //      .range(["#000000","#ff0000"]);
-    // this.cValue2d = function(d) {return d.t;};
+    this.dataSDSS = this.filterSDSS(this.dataFilt);
+
     this.color2d = this.color3d;
     this.cValue2d = this.cValue3d;
     this.dotsize2d=3;
@@ -500,12 +545,17 @@ HATLASPlot.prototype.make2dPlot = function(){
         .attr("transform", "translate(" + this.margin2d.left + "," +
             this.margin2d.top + ")")
         .attr("class","2d-gals");
+    this.g2dSDSS = this.svg2d.append("g")
+        .attr("transform", "translate(" + this.margin2d.left + "," +
+            this.margin2d.top + ")")
+        .attr("class","2d-sdss");
     //add BG galaxies
     this.dots2dHiZ = this.g2dHiZ.selectAll(".dot")
         .data(this.dataHiZ);
     this.dots2dHiZ.enter()
         .append("circle")
         .attr("class","dot")
+    this.dots2dHiZ
         .attr("r",this.dotsize2d+3)
         .attr("cx",ha.xMap2d)
         .attr("cy",ha.yMap2d)
@@ -514,21 +564,8 @@ HATLASPlot.prototype.make2dPlot = function(){
         .style("stroke-width",3)
         .attr("filter","url(#blurbg)")
         .attr("opacity",function(d){return ha.get2dOpacityHiZ(d)});
-    // add galaxies
-    this.dots2d = this.g2d.selectAll(".dot")
-        .data(this.dataFilt);
-    this.dots2d
-        .enter()
-        .append("circle")
-        .attr("class","dot")
-        .attr("r",this.dotsize2d+3)
-        .attr("cx",ha.xMap2d)
-        .attr("cy",ha.yMap2d)
-        .style("stroke","rgba(0,0,0,0)")
-        .style("stroke-width",3)
-        .style("fill",function(d){return ha.color2d(ha.cValue2d(d));})
-        .attr("filter","url(#blur)")
-        .attr("opacity",function(d){return ha.get2dOpacity(d)});
+    this.addDots();
+
     //add axes
     this.svg2d.append("g")
         .attr("class", "x-axis axis")
@@ -752,31 +789,31 @@ HATLASPlot.prototype.moveRA = function(inc){
     this.xScale2dAxis.range()[1] -= this.svg2dPlotWidth*inc
 
     this.dataFilt = this.filterData();
-    this.dots2d = this.g2d.selectAll(".dot")
-            .data(this.dataFilt);
-    this.dots2d
-        .enter()
-        .append("circle")
-        .attr("class","dot");
-    this.dots2d
-        .attr("r",this.dotsize2d+3)
-        .attr("cx",this.xMap2d)
-        .attr("cy",this.yMap2d)
-        .style("stroke","rgba(0,0,0,0)")
-        .style("stroke-width",3)
-        .style("fill",function(d){return ha.color2d(ha.cValue2d(d));})
-        .attr("filter","url(#blur)")
-        .attr("opacity",function(d){return ha.get2dOpacity(d)});
-    this.dots2d.exit().remove();
+    this.dataSDSS = this.filterSDSS(this.dataFilt);
 
-    this.dots2dHiZ
-        .attr("cx",this.xMap2d)
-        .attr("opacity",function(d){return ha.get2dOpacityHiZ(d)});
+    // this.dots2d = this.g2d.selectAll(".dot")
+    //     .data(this.dataFilt);
+    // this.dots2d
+    //     .enter()
+    //     .append("circle")
+    //     .attr("class","dot");
+    // this.dots2d.exit().remove();
+    //
+    // this.dots2dSDSS = this.g2dSDSS.selectAll(".dot")
+    //     .data(this.dataSDSS);
+    // this.dots2dSDSS.enter()
+    //     .append("circle")
+    //     .attr("class","dot")
+    // this.dots2dSDSS.exit().remove();
+
+    this.addDots();
+
     this.RAAxis2d = d3.svg.axis()
         .scale(this.xScale2dAxis)
         .orient("bottom")
         .innerTickSize(-10)
         .outerTickSize(0);
+
     this.svg2d.select(".x-axis.axis") // change the x axis
         .call(ha.RAAxis2d);
     this.moveSlice();
@@ -791,23 +828,24 @@ HATLASPlot.prototype.moveZ = function(inc){
 
     //this.setSlices(this.wMin.t,this.wMax.t,'t');
     this.dataFilt = this.filterData();
-    this.dots2d = this.g2d.selectAll(".dot")
-            .data(this.dataFilt);
-    this.dots2d
-        .enter()
-        .append("circle")
-        .attr("class","dot");
-    this.dots2d
-        .attr("r",this.dotsize2d+3)
-        .attr("cx",this.xMap2d)
-        .attr("cy",this.yMap2d)
-        .style("stroke","rgba(0,0,0,0)")
-        .style("stroke-width",3)
-        .style("fill",function(d){return ha.color2d(ha.cValue2d(d));})
-        .attr("filter","url(#blur)")
-        .attr("opacity",function(d){return ha.get2dOpacity(d)});
-    this.dots2d.exit().remove();
+    this.dataSDSS = this.filterSDSS(this.dataFilt);
 
+    // this.dots2d = this.g2d.selectAll(".dot")
+    //         .data(this.dataFilt);
+    // this.dots2d
+    //     .enter()
+    //     .append("circle")
+    //     .attr("class","dot");
+    // this.dots2d.exit().remove();
+    //
+    // this.dots2dSDSS = this.g2dSDSS.selectAll(".dot")
+    //     .data(this.dataSDSS);
+    // this.dots2dSDSS.enter()
+    //     .append("circle")
+    //     .attr("class","dot")
+    // this.dots2dSDSS.exit().remove();
+
+    this.addDots();
     // this.dots2d
     //     .attr("opacity",function(d){return ha.get2dOpacity(d)});
 
