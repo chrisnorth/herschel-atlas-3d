@@ -204,7 +204,7 @@ HATLASPlot.prototype.scaleWindow = function(){
     this.fValue = function(d){return Math.log10(d.F250)}
     this.fScale2d = d3.scale.linear()
         .domain([Math.log10(this.dMin.F250),Math.log10(this.dMax.F250)])
-        .range([0.2,1])
+        .range([0.5,1])
 }
 HATLASPlot.prototype.filterData = function(){
     // filter to return data in window
