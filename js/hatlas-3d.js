@@ -2,16 +2,30 @@ function HATLASPlot(){
     return this;
 }
 
-HATLASPlot.prototype.rdz2xy3d = function (RAscl,Decscl,z) {
+HATLASPlot.prototype.rdz2xy3dFixed = function (RAscl,Decscl,z) {
+    //DEPRACATED - REPLACED WITH rdz2xy3d
     //convert from RA,DEC,z to isometric projects
     // from https://en.wikipedia.org/wiki/Isometric_projection
     x = Math.sqrt(1/2) * (RAscl - z)
-    y = Math.sqrt(1/6) * (RAscl + Decscl + z)
+    y = Math.sqrt(1/6) * (RAscl + 2*Decscl + z)
     return [x,y];
 };
+HATLASPlot.prototype.rdz2xy3d = function (RAscl,Decscl,z) {
+    //convert from RA,DEC,z to isometric projects
+    // from https://en.wikipedia.org/wiki/Isometric_projection
+    ang1 = Math.asin(Math.tan(30*Math.PI/180));
+    ang2 = 45*Math.PI/180;
+    // console.log(ang1,ang2);
+    x = Math.cos(ang2)*RAscl + Math.sin(-ang2)*z
+    y = Math.sin(ang1)*Math.sin(ang2)*RAscl +
+        Math.cos(ang1)*Decscl +
+        Math.cos(ang1)*Math.cos(ang2)*z;
+    return [x,y];
+};
+
 HATLASPlot.prototype.scaleData = function(d){
     //scale data
-    d.RAscl=0.5*(d.RA-this.dCtr.RA)/this.dRng.RA;
+    d.RAscl=(d.RA-this.dCtr.RA)/this.dRng.RA;
     d.Decscl=(d.Dec-this.dCtr.Dec)/this.dRng.Dec;
     d.zscl=-2*(d.z-this.dCtr.z)/this.dRng.z;
     d.tscl=-2*(d.t-this.dCtr.t)/this.dRng.t;
