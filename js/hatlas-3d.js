@@ -453,6 +453,7 @@ HATLASPlot.prototype.add3dBox = function(corners,className){
     }
 }
 HATLASPlot.prototype.addDots = function(){
+    var ha=this;
     // add galaxies
     this.dots2d = this.g2d.selectAll(".dot")
         .data(this.dataFilt);
@@ -473,13 +474,25 @@ HATLASPlot.prototype.addDots = function(){
     this.dots2dSDSS = this.g2dSDSS.selectAll(".dot")
         .data(this.dataSDSS)
     this.dots2dSDSS.enter()
-        .append("circle")
+        .append("rect")
         .attr("class","dot")
     this.dots2dSDSS.exit().remove()
     this.dots2dSDSS
-        .attr("r",this.dotsize2d+5)
-        .attr("cx",ha.xMap2d)
-        .attr("cy",ha.yMap2d)
+        .attr("x",0)
+        .attr("y",0)
+        .attr("width",2*(ha.dotsize2d+5))
+        .attr("height",2*(ha.dotsize2d+5))
+        .attr("transform",function(d){
+            return "translate("+(-(ha.dotsize2d+5))+","+(-(ha.dotsize2d+5))+")"+
+            "rotate(45) "+
+            "translate ("+(Math.sqrt(0.5)*(ha.xMap2d(d)+ha.yMap2d(d)+0.5*(ha.dotsize2d+5)))+","+
+            (Math.sqrt(0.5)*(ha.yMap2d(d)-ha.xMap2d(d)-Math.sqrt(2)*(ha.dotsize2d+5)))+")"
+        })
+        // .attr("transform",function(d){
+        //     return "translate("+(-ha.xMap2d(d))+","+(-ha.yMap2d(d))+") "+
+        //     "rotate(45) "+
+        //     "translate("+(ha.xMap2d(d)-(ha.dotsize2d+5))+","+
+        //     (ha.yMap2d(d)-(ha.dotsize2d+5))+")"})
         .style("stroke","rgba(255,255,0,255)")
         .style("stroke-width",2)
         .style("fill","rgba(0,0,0,0)")
