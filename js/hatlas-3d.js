@@ -206,6 +206,14 @@ HATLASPlot.prototype.scaleWindow = function(){
         .domain([Math.log10(this.dMin.F250),Math.log10(this.dMax.F250)])
         .range([0.5,1])
 }
+HATLASPlot.prototype.filterFlux = function(){
+    // filter to return data in window
+    threshold = 8e-3*d3.max(this.dataAll,function(d){return d.F250})
+    dataFilt = this.dataAll.filter(function(d){
+        return (d.F250>threshold);
+    });
+    return dataFilt;
+}
 HATLASPlot.prototype.filterData = function(){
     // filter to return data in window
     ha=this;
@@ -405,6 +413,7 @@ HATLASPlot.prototype.make3dPlot = function(){
         .text("Lookback Time (billion years)");
 
     //
+    this.data3d = this.filterFlux();
     this.g3d = this.svg3d.append("g")
         .attr("transform", "translate(" + this.margin3d.left + "," +
             this.margin3d.top + ")")
@@ -416,7 +425,7 @@ HATLASPlot.prototype.make3dPlot = function(){
     // this.dataFilt3d = this.filterZ(ha.dMin.t,ha.dMax.t,'t');
     // add dots
     this.g3d.selectAll(".dot")
-        .data(this.dataAll)
+        .data(this.data3d)
         .enter()
         .append("circle")
         .attr("class","dot")
@@ -424,7 +433,7 @@ HATLASPlot.prototype.make3dPlot = function(){
         .attr("cx",ha.xMap3d)
         .attr("cy",ha.yMap3d)
         .style("fill", function(d){return ha.color3d(ha.cValue3d(d));})
-        .attr("opacity",0.5);
+        .attr("opacity",1);
     // top line
     var corners={
         x0y0z0:ha.rdz2xy3d(ha.dMin.RAscl,ha.dMin.Decscl,ha.dMin.tscl),
