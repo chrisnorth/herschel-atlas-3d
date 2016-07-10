@@ -86,3 +86,45 @@
 .tick line {
     opacity:1;
 }
+/*Info panel*/
+#info-close{
+    position:absolute;
+    width:30px;
+    height:30px;
+    right:-15px;
+    top:-10px;
+    cursor:pointer;
+}
+#info-bg{
+    position:fixed;
+    width:100%;
+    height:0;
+    left:0;
+    top:0;
+    background-color: #888;
+    opacity:0;
+}
+#info-outer{
+    position: fixed;
+    width: 200px;
+    height: 28px;
+    background-color:rgba(255,255,255,1);
+    border:solid rgba(0,0,0,1) 5px;
+    border-radius:20px;
+    padding:5px;
+    opacity:0;
+}
+#info-inner{
+    width:100%;
+    height:auto;
+    padding-bottom:10px;
+}
+.info-title{
+    width:100%;
+    text-align:center;
+    font-size:2em;
+    padding-bottom:10px;
+}
+.info-info{
+    font-size:1em;
+}

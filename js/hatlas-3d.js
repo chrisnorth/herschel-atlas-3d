@@ -105,8 +105,14 @@ HATLASPlot.prototype.drawGraphInit = function(){
         }else{
             ha.tBgMin = ha.dMax.t;
         }
+<<<<<<< HEAD
         ha.dataHiZ = ha.dataAll.filter(function(d){return (d.t > ha.tBgMin);});
         console.log(ha.tBgMin,ha.dataHiZ);
+=======
+        ha.dataHiZ = ha.dataAll.filter(function(d){return (d.z > ha.zBgMin);});
+        // filter data with features
+        ha.dataFeat = ha.dataAll.filter(function(d){return (d.Feature!="-");});
+>>>>>>> features
         //
         //
         ha.lines={
@@ -241,7 +247,27 @@ HATLASPlot.prototype.filterSDSS = function(dataIn){
     dataFilt = dataIn.filter(function(d){
         return (d.Z_SPEC > -50);
     });
+<<<<<<< HEAD
     return dataFilt;
+=======
+    this.dataFeat.forEach(function(d){
+        if((d[axName]<=ax2)&&(d[axName]>ax1)){
+            //in slice
+            d.inSlice = 1;
+        }else if((d[axName]<=ax2+ha.tRng2d)&&(d[axName]>ax1-ha.tRng2d)){
+            //either side of slice
+            d.inSlice=0.5;
+        }else{
+            //nowhere near slice
+            d.inSlice=0;
+        }
+    });
+    //get z limits
+    dataFilt=this.dataAll.filter(function(d){return (d.inSlice==1);});
+    this.zMin2d = d3.min(dataFilt,function(d){return d.z});
+    this.zMax2d = d3.max(dataFilt,function(d){return d.z});
+    // return dataFilt;
+>>>>>>> features
 }
 // HATLASPlot.prototype.setSlices = function(ax1In,ax2In,axName){
 //     if (axName==null){axName="z"}
@@ -322,6 +348,12 @@ HATLASPlot.prototype.get2dOpacityHiZ = function(d) {
         // return 0.5*this.fScale2d(this.fValue(d));
         return 0;
     }else{return 0};
+}
+HATLASPlot.prototype.get2dOpacityFeat = function(d) {
+    if((d.RA>=this.wMin.RA)&&(d.RA<=this.wMax.RA)){
+        if (d.inSlice==1){return 1;}
+        else{return 0.1}
+    }else{return 0}
 }
 HATLASPlot.prototype.getAstroScales = function(){
     var ha=this;
@@ -559,6 +591,7 @@ HATLASPlot.prototype.make2dPlot = function(){
     this.cValue2d = this.cValue3d;
     this.dotsize2d=3;
 
+    //add groups
     this.g2dHiZ = this.svg2d.append("g")
         .attr("transform", "translate(" + this.margin2d.left + "," +
             this.margin2d.top + ")")
@@ -567,10 +600,17 @@ HATLASPlot.prototype.make2dPlot = function(){
         .attr("transform", "translate(" + this.margin2d.left + "," +
             this.margin2d.top + ")")
         .attr("class","2d-gals");
+<<<<<<< HEAD
     this.g2dSDSS = this.svg2d.append("g")
         .attr("transform", "translate(" + this.margin2d.left + "," +
             this.margin2d.top + ")")
         .attr("class","2d-sdss");
+=======
+    this.g2dFeat = this.svg2d.append("g")
+        .attr("transform", "translate(" + this.margin2d.left + "," +
+            this.margin2d.top + ")")
+        .attr("class","2d-gals-feat");
+>>>>>>> features
     //add BG galaxies
     this.dots2dHiZ = this.g2dHiZ.selectAll(".dot")
         .data(this.dataHiZ);
@@ -586,8 +626,40 @@ HATLASPlot.prototype.make2dPlot = function(){
         .style("stroke-width",3)
         .attr("filter","url(#blurbg)")
         .attr("opacity",function(d){return ha.get2dOpacityHiZ(d)});
+<<<<<<< HEAD
     this.addDots();
 
+=======
+    // add galaxies
+    this.dots2d = this.g2d.selectAll(".dot")
+        .data(this.dataAll);
+    this.dots2d
+        .enter()
+        .append("circle")
+        .attr("class","dot")
+        .attr("r",this.dotsize2d+3)
+        .attr("cx",ha.xMap2d)
+        .attr("cy",ha.yMap2d)
+        .style("stroke","rgba(255,255,255,0)")
+        .style("stroke-width",3)
+        .style("fill",function(d){return ha.color2d(ha.cValue2d(d));})
+        .attr("filter","url(#blur)")
+        .attr("opacity",function(d){return ha.get2dOpacity(d)});
+    this.dots2dFeat = this.g2dFeat.selectAll(".dot")
+        .data(this.dataFeat);
+    this.dots2dFeat
+        .enter()
+        .append("circle")
+        .attr("class","dot")
+        .attr("r",this.dotsize2d+8)
+        .attr("cx",ha.xMap2d)
+        .attr("cy",ha.yMap2d)
+        .style("stroke",function(d){return ha.color2d(ha.cValue2d(d));})
+        .style("stroke-width",2)
+        .style("fill","rgba(255,255,255,0)")
+        // .attr("filter","url(#blur)")
+        .attr("opacity",function(d){return ha.get2dOpacityFeat(d)});
+>>>>>>> features
     //add axes
     this.svg2d.append("g")
         .attr("class", "x-axis axis")
@@ -758,11 +830,19 @@ HATLASPlot.prototype.addZButtons = function(){
     this.updateZArrows();
 }
 HATLASPlot.prototype.updateZArrows = function(){
+<<<<<<< HEAD
     if (this.wMin.t<=0.01*this.dMin.t){
         this.divDown.style({"opacity":0.2,"cursor":"default"})
     }else{
         this.divDown.style({"opacity":1,"cursor":"pointer"})}
     if (this.wMax.t>=0.99*this.dMax.t){
+=======
+    if (this.tMin2d<=this.dMin.t+0.01){
+        this.divDown.style({"opacity":0.2,"cursor":"default"})
+    }else{
+        this.divDown.style({"opacity":1,"cursor":"pointer"})}
+    if (this.tMax2d>=this.dMax.t-0.01){
+>>>>>>> features
         this.divUp.style({"opacity":0.2,"cursor":"default"})
     }else{this.divUp.style({"opacity":1,"cursor":"pointer"})}
 }
@@ -810,6 +890,7 @@ HATLASPlot.prototype.moveRA = function(inc){
     this.xScale2dAxis.range()[0] -= this.svg2dPlotWidth*inc
     this.xScale2dAxis.range()[1] -= this.svg2dPlotWidth*inc
 
+<<<<<<< HEAD
     this.dataFilt = this.filterData();
     this.dataSDSS = this.filterSDSS(this.dataFilt);
 
@@ -830,6 +911,17 @@ HATLASPlot.prototype.moveRA = function(inc){
 
     this.addDots();
 
+=======
+    this.dots2d
+        .attr("cx",this.xMap2d)
+        .attr("opacity",function(d){return ha.get2dOpacity(d)});
+    this.dots2dHiZ
+        .attr("cx",this.xMap2d)
+        .attr("opacity",function(d){return ha.get2dOpacityHiZ(d)});
+    this.dots2dFeat
+        .attr("cx",this.xMap2d)
+        .attr("opacity",function(d){return ha.get2dOpacityFeat(d)});
+>>>>>>> features
     this.RAAxis2d = d3.svg.axis()
         .scale(this.xScale2dAxis)
         .orient("bottom")
@@ -852,6 +944,7 @@ HATLASPlot.prototype.moveZ = function(inc){
     this.dataFilt = this.filterData();
     this.dataSDSS = this.filterSDSS(this.dataFilt);
 
+<<<<<<< HEAD
     // this.dots2d = this.g2d.selectAll(".dot")
     //         .data(this.dataFilt);
     // this.dots2d
@@ -870,6 +963,12 @@ HATLASPlot.prototype.moveZ = function(inc){
     this.addDots();
     // this.dots2d
     //     .attr("opacity",function(d){return ha.get2dOpacity(d)});
+=======
+    this.dots2d
+        .attr("opacity",function(d){return ha.get2dOpacity(d)});
+    this.dots2dFeat
+        .attr("opacity",function(d){return ha.get2dOpacityFeat(d)});
+>>>>>>> features
 
     this.moveSlice();
     this.updateZNumbers();
