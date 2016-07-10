@@ -209,10 +209,10 @@ HATLASPlot.prototype.scaleWindow = function(){
             0.01*this.svg2dPlotHeight])
 
     // flux to opacity scale
-    this.fValue = function(d){return Math.log10(d.F500)}
+    this.fValue = function(d){return Math.log10(d.F250)}
     this.fScale2d = d3.scale.linear()
-        .domain([Math.log10(this.dMin.F500),Math.log10(this.dMax.F500)])
-        .range([0.2,1])
+        .domain([Math.log10(this.dMin.F250),Math.log10(this.dMax.F250)])
+        .range([0.4,1])
 }
 HATLASPlot.prototype.filterFlux = function(){
     // filter to return data in window
@@ -362,7 +362,7 @@ HATLASPlot.prototype.make3dPlot = function(){
     // this.cValue = function(d) {return d.t;};
     this.color3d = d3.scale.linear()
          .domain([ha.dMin.t,0.5*(ha.dMin.t+ha.dMax.t),ha.dMax.t])
-         .range(["#5555ff","#55ff55","#ff5555"]);
+         .range(["#8888ff","#55ff55","#ff5555"]);
     this.cValue3d = function(d) {return d.t;};
     this.dotsize3d=1;
     this.svg3dCont = d3.select("div#svg-container-3d")
