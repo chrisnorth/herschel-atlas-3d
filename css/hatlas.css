@@ -27,12 +27,11 @@
     overflow: hidden;
     border: solid black 1px;
 }
-.button-RA-cont{
+.button-RA-cont, .button-Dec-cont{
     position: absolute;
     height: 10%;
-    top:50%;
 }
-.button-RA-cont img{
+.button-RA-cont img, .button-Dec-cont img{
     height:100%;
     /*cursor:pointer;*/
 }
@@ -63,10 +62,7 @@
 }
 #div-z-up{
     float:right;
-}
-.button-cont{
-    float:left;
-}
+}   
 .axis path,
 .axis line {
   fill: none;

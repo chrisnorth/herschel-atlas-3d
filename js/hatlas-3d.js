@@ -127,8 +127,9 @@ HATLASPlot.prototype.drawGraphInit = function(){
         ha.scaleWindow();
         ha.make3dPlot();
         ha.make2dPlot();
-        ha.addRAButtons();
-        ha.addZButtons();
+        ha.addRAArrows();
+        ha.addDecArrows();
+        ha.addZArrows();
         ha.addZNumbers();
     });
 }
@@ -175,10 +176,10 @@ HATLASPlot.prototype.scaleWindow = function(){
     this.wMin = {}
     this.wMax = {}
     this.wRng = {}
-    this.wRng.RA = this.dRng.Dec;
+    this.wRng.RA = this.dRng.Dec/2;
     this.wMin.RA = this.dMin.RA;
     this.wMax.RA = this.wMin.RA + this.wRng.RA;
-    this.wRng.Dec = this.dRng.Dec;
+    this.wRng.Dec = this.dRng.Dec/2;
     this.wMin.Dec = this.dMin.Dec;
     this.wMax.Dec = this.wMin.Dec + this.wRng.Dec;
 
@@ -189,16 +190,23 @@ HATLASPlot.prototype.scaleWindow = function(){
         .domain([this.wMin.RA,this.wMax.RA])
         .range([0.01*this.svg2dPlotWidth, 0.99*this.svg2dPlotWidth])
     this.xMap2d = function(d) { return ha.xScale2d(ha.xValue2d(d));}
-    //x-axis scale
+
+    this.yValue2d = function(d) {return d.Dec;}
+    this.yScale2d = d3.scale.linear()
+        .domain([this.wMin.Dec,this.wMax.Dec])
+        .range([0.99*this.svg2dPlotHeight, 0.01*this.svg2dPlotHeight])
+    this.yMap2d = function(d) { return ha.yScale2d(ha.yValue2d(d));}
+
+    // x-axis scale
     this.xScale2dAxis = d3.scale.linear()
         .domain([this.dMin.RA,this.dMax.RA])
         .range([0.01*this.svg2dPlotWidth,
             0.99*this.svg2dPlotWidth*this.dRng.RA/this.wRng.RA])
-    this.yValue2d = function(d) {return d.Dec;}
-    this.yScale2d = d3.scale.linear()
+            //x-axis scale
+    this.yScale2dAxis = d3.scale.linear()
         .domain([this.dMin.Dec,this.dMax.Dec])
-        .range([0.99*this.svg2dPlotHeight, 0.01*this.svg2dPlotHeight])
-    this.yMap2d = function(d) { return ha.yScale2d(ha.yValue2d(d));}
+        .range([0.99*this.svg2dPlotHeight*this.dRng.Dec/this.wRng.Dec,
+            0.01*this.svg2dPlotHeight])
 
     // flux to opacity scale
     this.fValue = function(d){return Math.log10(d.F500)}
@@ -559,7 +567,7 @@ HATLASPlot.prototype.make2dPlot = function(){
             .outerTickSize(-10)
             .ticks(20);
     this.DecAxis2d = d3.svg.axis()
-            .scale(this.yScale2d)
+            .scale(this.yScale2dAxis)
             .orient("left")
             .innerTickSize(-10)
             .outerTickSize(0);
@@ -592,21 +600,7 @@ HATLASPlot.prototype.make2dPlot = function(){
         .attr("transform", "translate(" + this.margin2d.left + "," +
             this.margin2d.top + ")")
         .attr("class","2d-gals-feat");
-    //add BG galaxies
-    // this.dots2dHiZ = this.g2dHiZ.selectAll(".dot")
-    //     .data(this.dataHiZ);
-    // this.dots2dHiZ.enter()
-    //     .append("circle")
-    //     .attr("class","dot")
-    // this.dots2dHiZ
-    //     .attr("r",this.dotsize2d+3)
-    //     .attr("cx",ha.xMap2d)
-    //     .attr("cy",ha.yMap2d)
-    //     .style("fill", function(d){return ha.color2d(ha.cValue2d(d));})
-    //     .style("stroke","rgba(0,0,0,0)")
-    //     .style("stroke-width",3)
-    //     .attr("filter","url(#blurbg)")
-    //     .attr("opacity",function(d){return ha.get2dOpacityHiZ(d)});
+
     this.addDots();
 
     //add axes
@@ -728,7 +722,7 @@ HATLASPlot.prototype.moveSlice = function(){
     //     .transition().duration(500)
     //     .attr("opacity",function(d){return ha.get3dOpacity(d);});
 }
-HATLASPlot.prototype.addRAButtons = function(){
+HATLASPlot.prototype.addRAArrows = function(){
     var ha=this;
     this.divRAUp = d3.select("div#button-RA-right")
     this.divRADown = d3.select("div#button-RA-left")
@@ -740,9 +734,9 @@ HATLASPlot.prototype.addRAButtons = function(){
         .style("top","45%").style("left","15%")
     this.divRADown.select("img")
         .on("click",function(){ha.moveRA(-1)});
-    this.updateRAButtons();
+    this.updateRAArrows();
 }
-HATLASPlot.prototype.updateRAButtons = function(){
+HATLASPlot.prototype.updateRAArrows = function(){
     if (this.wMin.RA <= 0.01*this.dMin.RA){
         this.divRADown.select("img")
             .attr("title","")
@@ -758,14 +752,38 @@ HATLASPlot.prototype.updateRAButtons = function(){
             .attr("title","Move right")
             .style({"opacity":0.5,"cursor":"pointer"})}
 }
-HATLASPlot.prototype.addZButtons = function(){
+HATLASPlot.prototype.addDecArrows = function(){
     var ha=this;
-    // this.buttons2d = d3.select("#buttons-container")
-    //     .style("height","auto");
-    // this.zDown = d3.select("#button-z-down");
-    // this.zUp = d3.select("#button-z-up");
-    // this.zDown.on("click",function(){ha.decreaseZ();});
-    // this.zUp.on("click",function(){ha.increaseZ();});
+    this.divDecUp = d3.select("div#button-Dec-up")
+    this.divDecDown = d3.select("div#button-Dec-down")
+    this.divDecUp
+        .style("top","5%").style("left","50%")
+    this.divDecUp.select("img")
+        .on("click",function(){ha.moveDec(-1)});
+    this.divDecDown
+        .style("top","75%").style("left","50%")
+    this.divDecDown.select("img")
+        .on("click",function(){ha.moveDec(1)});
+    this.updateDecArrows();
+}
+HATLASPlot.prototype.updateDecArrows = function(){
+    if (this.wMax.Dec >= 0.99*this.dMax.Dec){
+        this.divDecDown.select("img")
+            .attr("title","")
+            .style({"opacity":0.2,"cursor":"default"})
+    }else{this.divDecDown.select("img")
+            .attr("title","Move down")
+            .style({"opacity":0.5,"cursor":"pointer"})}
+    if (this.wMin.Dec <= 0.01*this.dMin.Dec){
+        this.divDecUp.select("img")
+            .attr("title","")
+            .style({"opacity":0.2,"cursor":"default"})
+    }else{this.divDecUp.select("img")
+            .attr("title","Move up")
+            .style({"opacity":0.5,"cursor":"pointer"})}
+}
+HATLASPlot.prototype.addZArrows = function(){
+    var ha=this;
     this.divDown = d3.select("div#button-left")
     this.divUp = d3.select("div#button-right")
     this.divDown
@@ -845,11 +863,44 @@ HATLASPlot.prototype.moveRA = function(inc){
     this.svg2d.select(".x-axis.axis") // change the x axis
         .call(ha.RAAxis2d);
     this.moveSlice();
-    this.updateRAButtons();
+    this.updateRAArrows();
+}
+HATLASPlot.prototype.moveDec = function(inc){
+    var ha=this;
+    inc = (inc) ? inc : 0.5;
+    if(inc==0){return}
+    if((inc<0)&&(this.wMin.Dec<=0.01*this.dMin.Dec)){return}
+    if((inc>0)&&(this.wMax.Dec>=0.99*this.dMax.Dec)){return}
+    //add to RA limits
+    this.wMin.Dec += this.wRng.Dec*inc;
+    this.wMax.Dec += this.wRng.Dec*inc;
+    this.yScale2d = d3.scale.linear()
+        .domain([this.wMin.Dec,this.wMax.Dec])
+        .range([0.99*this.svg2dPlotHeight, 0.01*this.svg2dPlotHeight])
+    this.yMap2d = function(d) { return ha.yScale2d(ha.yValue2d(d));}
+    // new x-axis scale
+    this.yScale2dAxis.range()[0] -= this.svg2dPlotHeight*inc
+    this.yScale2dAxis.range()[1] -= this.svg2dPlotHeight*inc
+
+    this.dataFilt = this.filterData();
+    this.dataSDSS = this.filterSDSS(this.dataFilt);
+
+    this.addDots();
+
+    this.DecAxis2d = d3.svg.axis()
+        .scale(this.yScale2dAxis)
+        .orient("left")
+        .innerTickSize(-10)
+        .outerTickSize(0);
+
+    this.svg2d.select(".y-axis.axis") // change the x axis
+        .call(ha.DecAxis2d);
+    this.moveSlice();
+    this.updateDecArrows();
 }
 HATLASPlot.prototype.moveZ = function(inc){
-    if((inc<0)&&(this.wMin.t<=this.dMin.t)){return}
-    if((inc>0)&&(this.wMax.t>=this.dMax.t)){return}
+    if((inc<0)&&(this.wMin.t<=0.01*this.dMin.t)){return}
+    if((inc>0)&&(this.wMax.t>=0.99*this.dMax.t)){return}
     // this.divDown.attr("opacity",1);
     this.wMin.t += this.wRng.t*inc;
     this.wMax.t += this.wRng.t*inc;
@@ -858,26 +909,7 @@ HATLASPlot.prototype.moveZ = function(inc){
     this.dataFilt = this.filterData();
     this.dataSDSS = this.filterSDSS(this.dataFilt);
 
-
-    // this.dots2d = this.g2d.selectAll(".dot")
-    //         .data(this.dataFilt);
-    // this.dots2d
-    //     .enter()
-    //     .append("circle")
-    //     .attr("class","dot");
-    // this.dots2d.exit().remove();
-    //
-    // this.dots2dSDSS = this.g2dSDSS.selectAll(".dot")
-    //     .data(this.dataSDSS);
-    // this.dots2dSDSS.enter()
-    //     .append("circle")
-    //     .attr("class","dot")
-    // this.dots2dSDSS.exit().remove();
-
     this.addDots();
-    // this.dots2d
-    //     .attr("opacity",function(d){return ha.get2dOpacity(d)});
-
 
     this.moveSlice();
     this.updateZNumbers();
