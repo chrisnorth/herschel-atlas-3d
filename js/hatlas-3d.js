@@ -737,22 +737,31 @@ HATLASPlot.prototype.addRAArrows = function(){
     this.updateRAArrows();
 }
 HATLASPlot.prototype.updateRAArrows = function(){
-    if (this.wMin.RA <= 0.01*this.dMin.RA){
+    console.log('RA min (d,w)',0.01*this.dMin.RA,this.wMin.RA);
+    if (this.wMin.RA <= this.dMin.RA + 0.01*this.dRng.RA){
+        console.log('no left');
         this.divRADown.select("img")
             .attr("title","")
             .style({"opacity":0.0,"cursor":"default"})
-    }else{this.divRADown.select("img")
+    }else{
+        console.log('yes left');
+        this.divRADown.select("img")
             .attr("title","Move left")
             .style({"opacity":0.5,"cursor":"pointer"})}
-    if (this.wMax.RA >= 0.99*this.dMax.RA){
+    console.log('RA max (d,w)',0.99*this.dMax.RA,this.wMax.RA);
+    if (this.wMax.RA >= this.dMax.RA - 0.01*this.dRng.RA){
+        console.log('no right');
         this.divRAUp.select("img")
             .attr("title","")
             .style({"opacity":0.0,"cursor":"default"})
-    }else{this.divRAUp.select("img")
+    }else{
+        console.log('yes right');
+        this.divRAUp.select("img")
             .attr("title","Move right")
             .style({"opacity":0.5,"cursor":"pointer"})}
 }
 HATLASPlot.prototype.addDecArrows = function(){
+    //remember that Dec axis is reversed
     var ha=this;
     this.divDecUp = d3.select("div#button-Dec-up")
     this.divDecDown = d3.select("div#button-Dec-down")
@@ -767,14 +776,15 @@ HATLASPlot.prototype.addDecArrows = function(){
     this.updateDecArrows();
 }
 HATLASPlot.prototype.updateDecArrows = function(){
-    if (this.wMax.Dec >= 0.99*this.dMax.Dec){
+    // remember that Dec axis is reversed (SVF ref is *top*-left)
+    if (this.wMax.Dec >= this.dMax.Dec - 0.01*this.dRng.Dec){
         this.divDecDown.select("img")
             .attr("title","")
             .style({"opacity":0.2,"cursor":"default"})
     }else{this.divDecDown.select("img")
             .attr("title","Move down")
             .style({"opacity":0.5,"cursor":"pointer"})}
-    if (this.wMin.Dec <= 0.01*this.dMin.Dec){
+    if (this.wMin.Dec <= this.dMin.Dec + 0.01*this.dRng.Dec){
         this.divDecUp.select("img")
             .attr("title","")
             .style({"opacity":0.2,"cursor":"default"})
@@ -836,8 +846,8 @@ HATLASPlot.prototype.moveRA = function(inc){
     var ha=this;
     inc = (inc) ? inc : 0.5;
     if(inc==0){return}
-    if((inc<0)&&(this.wMin.RA<=0.01*this.dMin.RA)){return}
-    if((inc>0)&&(this.wMax.RA>=0.99*this.dMax.RA)){return}
+    if((inc<0)&&(this.wMin.RA<=this.dMin.RA + 0.01*this.dRng.RA)){return}
+    if((inc>0)&&(this.wMax.RA>=this.dMax.RA - 0.01*this.dRng.RA)){return}
     //add to RA limits
     this.wMin.RA += this.wRng.RA*inc;
     this.wMax.RA += this.wRng.RA*inc;
@@ -869,8 +879,8 @@ HATLASPlot.prototype.moveDec = function(inc){
     var ha=this;
     inc = (inc) ? inc : 0.5;
     if(inc==0){return}
-    if((inc<0)&&(this.wMin.Dec<=0.01*this.dMin.Dec)){return}
-    if((inc>0)&&(this.wMax.Dec>=0.99*this.dMax.Dec)){return}
+    if((inc<0)&&(this.wMin.Dec<=this.dMin.Dec + 0.01*this.dRng.Dec)){return}
+    if((inc>0)&&(this.wMax.Dec>=this.dMax.Dec - 0.01*this.dRng.Dec)){return}
     //add to RA limits
     this.wMin.Dec += this.wRng.Dec*inc;
     this.wMax.Dec += this.wRng.Dec*inc;
