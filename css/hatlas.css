@@ -37,9 +37,9 @@
 }
 #button-Nav{
     height:5%;
-    width:5%;
-    top:15%;
-    left:20%;
+    width:20%;
+    top:5%;
+    left:12.5%;
     text-align:center;
 }
 #button-Dec-up{
@@ -61,6 +61,18 @@
     height:5%;
     top:15%;
     left:25%;
+}
+#button-z-up{
+    height:5%;
+    top:7.5%;
+    left:27.5%;
+    transform:rotate(-45deg);
+}
+#button-z-down{
+    height:5%;
+    top:22.5%;
+    left:12.5%;
+    transform:rotate(-45deg);
 }
 .buttons-container{
     width:auto;
@@ -150,4 +162,15 @@
 }
 .info-info{
     font-size:1em;
+}
+#tooltip {
+  position: absolute;
+  width: 200px;
+  height: 28px;
+  pointer-events: none;
+  background-color:rgba(255,255,255,1);
+  border:solid rgba(0,0,0,0.5) 1px;
+  border-radius:10px;
+  padding:5px;
+  color:black;
 }
