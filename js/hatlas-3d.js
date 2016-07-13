@@ -11,10 +11,14 @@ HATLASPlot.prototype.rdz2xy3dFixed = function (RAscl,Decscl,z) {
     return [x,y];
 };
 HATLASPlot.prototype.rdz2xy3d = function (RAscl,Decscl,z) {
-    //convert from RA,DEC,z to isometric projects
+    // convert from RA,DEC,z to isometric projects
     // from https://en.wikipedia.org/wiki/Isometric_projection
-    ang1 = Math.asin(Math.tan(30*Math.PI/180));
-    ang2 = 45*Math.PI/180;
+    ang1=this.ang1;
+    ang2=this.ang2;
+    // console.log('1',ang1,ang2);
+    // ang1 = Math.asin(Math.tan(30*Math.PI/180));
+    // ang2 = 45*Math.PI/180;
+    // console.log('2',ang1,ang2);
     // console.log(ang1,ang2);
     x = Math.cos(ang2)*RAscl + Math.sin(-ang2)*z
     y = Math.sin(ang1)*Math.sin(ang2)*RAscl +
@@ -46,6 +50,8 @@ HATLASPlot.prototype.scaleT = function(t){
 HATLASPlot.prototype.drawGraphInit = function(){
     // console.log('reading data')
     var ha=this;
+    this.ang1 = Math.asin(Math.tan(30*Math.PI/180));
+    this.ang2 = 45*Math.PI/180;
     this.setColors();
     //load data
     d3.csv("data/HATLAS_time_flux_feature_GAMA15.csv", function(error, data){
@@ -423,8 +429,6 @@ HATLASPlot.prototype.make3dPlot = function(){
         .attr("transform", "translate(" + this.margin3d.left + "," +
             this.margin3d.top + ")")
         .attr("class","3d-gals")
-    // this.dataFilt = this.dataAll;
-    // console.log(this.dataFilt);
 
     // filter data
     // this.dataFilt3d = this.filterZ(ha.dMin.t,ha.dMax.t,'t');
@@ -484,7 +488,7 @@ HATLASPlot.prototype.addDots = function(){
         .style("fill",function(d){return ha.color2d(ha.cValue2d(d));})
         .attr("filter","url(#blur)")
         .attr("opacity",function(d){return ha.get2dOpacity(d)});
-    // add SDSS
+    // add SDSS (45deg rotated rectangles)
     this.dots2dSDSS = this.g2dSDSS.selectAll(".dot")
         .data(this.dataSDSS)
     this.dots2dSDSS.enter()
@@ -502,20 +506,10 @@ HATLASPlot.prototype.addDots = function(){
             "translate ("+(Math.sqrt(0.5)*(ha.xMap2d(d)+ha.yMap2d(d)+0.5*(ha.dotsize2d+5)))+","+
             (Math.sqrt(0.5)*(ha.yMap2d(d)-ha.xMap2d(d)-Math.sqrt(2)*(ha.dotsize2d+5)))+")"
         })
-        // .attr("transform",function(d){
-        //     return "translate("+(-ha.xMap2d(d))+","+(-ha.yMap2d(d))+") "+
-        //     "rotate(45) "+
-        //     "translate("+(ha.xMap2d(d)-(ha.dotsize2d+5))+","+
-        //     (ha.yMap2d(d)-(ha.dotsize2d+5))+")"})
         .style("stroke","rgba(255,255,0,255)")
         .style("stroke-width",2)
         .style("fill","rgba(0,0,0,0)")
         .attr("opacity",0.5);
-
-    //style HiZ galaxies
-    // this.dots2dHiZ
-    //     .attr("cx",this.xMap2d)
-    //     .attr("opacity",function(d){return ha.get2dOpacityHiZ(d)});
 
     // add Features
     this.dots2dFeat = this.g2dFeat.selectAll(".dot")
@@ -726,12 +720,15 @@ HATLASPlot.prototype.addRAArrows = function(){
     var ha=this;
     this.divRAUp = d3.select("div#button-RA-right")
     this.divRADown = d3.select("div#button-RA-left")
-    this.divRAUp
-        .style("top","45%").style("left","85%")
+    console.log('RA axis angle:',ha.getRAAxisAngle(),"rotate("+parseInt(ha.getRAAxisAngle())+")");
+    // this.divRAUp
+    //     .style("top","45%").style("left","85%")
+    // document.getElementById("arrow-RA-right").style.transform =
+    //     "rotate("+parseInt(ha.getRAAxisAngle()/2)+"deg)";
     this.divRAUp.select("img")
         .on("click",function(){ha.moveRA(1)});
-    this.divRADown
-        .style("top","45%").style("left","15%")
+    // this.divRADown
+    //     .style("top","45%").style("left","15%")
     this.divRADown.select("img")
         .on("click",function(){ha.moveRA(-1)});
     this.updateRAArrows();
@@ -765,12 +762,12 @@ HATLASPlot.prototype.addDecArrows = function(){
     var ha=this;
     this.divDecUp = d3.select("div#button-Dec-up")
     this.divDecDown = d3.select("div#button-Dec-down")
-    this.divDecUp
-        .style("top","5%").style("left","50%")
+    // this.divDecUp
+    //     .style("top","5%").style("left","50%")
     this.divDecUp.select("img")
         .on("click",function(){ha.moveDec(-1)});
-    this.divDecDown
-        .style("top","75%").style("left","50%")
+    // this.divDecDown
+    //     .style("top","75%").style("left","50%")
     this.divDecDown.select("img")
         .on("click",function(){ha.moveDec(1)});
     this.updateDecArrows();

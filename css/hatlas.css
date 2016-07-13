@@ -27,13 +27,40 @@
     overflow: hidden;
     border: solid black 1px;
 }
-.button-RA-cont, .button-Dec-cont{
+.button-Nav-cont{
     position: absolute;
     height: 10%;
 }
-.button-RA-cont img, .button-Dec-cont img{
+.button-Nav-cont img{
     height:100%;
     /*cursor:pointer;*/
+}
+#button-Nav{
+    height:5%;
+    width:5%;
+    top:15%;
+    left:20%;
+    text-align:center;
+}
+#button-Dec-up{
+    height:5%;
+    top:10%;
+    left:20%;
+}
+#button-Dec-down{
+    height:5%;
+    top:20%;
+    left:20%;
+}
+#button-RA-left{
+    height:5%;
+    top:15%;
+    left:15%;
+}
+#button-RA-right{
+    height:5%;
+    top:15%;
+    left:25%;
 }
 .buttons-container{
     width:auto;
@@ -62,7 +89,7 @@
 }
 #div-z-up{
     float:right;
-}   
+}
 .axis path,
 .axis line {
   fill: none;
