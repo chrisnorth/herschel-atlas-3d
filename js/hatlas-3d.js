@@ -112,7 +112,7 @@ HATLASPlot.prototype.drawGraphInit = function(){
             ha.tBgMin = ha.dMax.t;
         }
         // ha.dataHiZ = ha.dataAll.filter(function(d){return (d.t > ha.tBgMin);});
-        ha.dataFeat = ha.dataAll.filter(function(d){return (d.FeatureType!="-");});
+        //ha.dataFeat = ha.dataAll.filter(function(d){return (d.FeatureType!="-");});
         //
         //
         ha.lines={
@@ -130,14 +130,17 @@ HATLASPlot.prototype.drawGraphInit = function(){
             y1z1:['x0y1z1','x1y1z1']
         }
         //
-        ha.scaleWindow();
-        ha.make3dPlot();
-        ha.make2dPlot();
-        ha.addRAArrows();
-        ha.addDecArrows();
-        ha.addZArrows();
-        ha.addZNumbers();
-        ha.tooltip = d3.select("#tooltip");
+        d3.json("data/features_GAMA15.json", function(error, data){
+            ha.dataFeat = data;
+            ha.scaleWindow();
+            ha.make3dPlot();
+            ha.make2dPlot();
+            ha.addRAArrows();
+            ha.addDecArrows();
+            ha.addZArrows();
+            ha.addZNumbers();
+            ha.tooltip = d3.select("#tooltip");
+        });
     });
 }
 HATLASPlot.prototype.setColors = function(){
@@ -252,6 +255,7 @@ HATLASPlot.prototype.filterData = function(){
 
     // filter features
     this.dataFeat.forEach(function(d){
+        // d=this.dataFeat[obj];
         d.inSlice=1;
         d.inBorder=1;
         for (a=0;a<axes.length;a++){
@@ -446,7 +450,7 @@ HATLASPlot.prototype.make3dPlot = function(){
         .style("fill", function(d){return ha.color3d(ha.cValue3d(d));})
         .attr("opacity",1);
     // top line
-    var corners={
+    this.boxcorners={
         x0y0z0:{loc:ha.rdz2xy3d(ha.dMin.RAscl,ha.dMin.Decscl,ha.dMin.tscl),op:1},
         x1y0z0:{loc:ha.rdz2xy3d(ha.dMax.RAscl,ha.dMin.Decscl,ha.dMin.tscl),op:1},
         x0y1z0:{loc:ha.rdz2xy3d(ha.dMin.RAscl,ha.dMax.Decscl,ha.dMin.tscl),op:0.5},
@@ -456,7 +460,7 @@ HATLASPlot.prototype.make3dPlot = function(){
         x1y0z1:{loc:ha.rdz2xy3d(ha.dMax.RAscl,ha.dMin.Decscl,ha.dMax.tscl),op:1},
         x1y1z1:{loc:ha.rdz2xy3d(ha.dMax.RAscl,ha.dMax.Decscl,ha.dMax.tscl),op:1}
     };
-    this.add3dBox(corners,"3dbox");
+    this.add3dBox(this.boxcorners,"3dbox");
 }
 HATLASPlot.prototype.add3dBox = function(corners,className){
     // this.
@@ -473,6 +477,78 @@ HATLASPlot.prototype.add3dBox = function(corners,className){
             .attr("class",className+" "+this.lines[l][0]+"-"+this.lines[l][1]);
     }
 }
+HATLASPlot.prototype.get3dLines = function(){
+    var ha=this;
+    projs = {
+        xy0:[ha.rdz2xy3d(ha.scaleRA(ha.wMin.RA),ha.scaleDec(ha.wMin.Dec),ha.dMin.tscl),
+            ha.rdz2xy3d(ha.scaleRA(ha.wMin.RA),ha.scaleDec(ha.wMax.Dec),ha.dMin.tscl),
+            ha.rdz2xy3d(ha.scaleRA(ha.wMax.RA),ha.scaleDec(ha.wMax.Dec),ha.dMin.tscl),
+            ha.rdz2xy3d(ha.scaleRA(ha.wMax.RA),ha.scaleDec(ha.wMin.Dec),ha.dMin.tscl),
+            ha.rdz2xy3d(ha.scaleRA(ha.wMin.RA),ha.scaleDec(ha.wMin.Dec),ha.dMin.tscl)],
+        xy1:[ha.rdz2xy3d(ha.scaleRA(ha.wMin.RA),ha.scaleDec(ha.wMin.Dec),ha.dMax.tscl),
+            ha.rdz2xy3d(ha.scaleRA(ha.wMin.RA),ha.scaleDec(ha.wMax.Dec),ha.dMax.tscl),
+            ha.rdz2xy3d(ha.scaleRA(ha.wMax.RA),ha.scaleDec(ha.wMax.Dec),ha.dMax.tscl),
+            ha.rdz2xy3d(ha.scaleRA(ha.wMax.RA),ha.scaleDec(ha.wMin.Dec),ha.dMax.tscl),
+            ha.rdz2xy3d(ha.scaleRA(ha.wMin.RA),ha.scaleDec(ha.wMin.Dec),ha.dMax.tscl)],
+        xz0:[ha.rdz2xy3d(ha.scaleRA(ha.wMin.RA),ha.dMin.Decscl,ha.scaleT(ha.wMin.t)),
+            ha.rdz2xy3d(ha.scaleRA(ha.wMin.RA),ha.dMin.Decscl,ha.scaleT(ha.wMax.t)),
+            ha.rdz2xy3d(ha.scaleRA(ha.wMax.RA),ha.dMin.Decscl,ha.scaleT(ha.wMax.t)),
+            ha.rdz2xy3d(ha.scaleRA(ha.wMax.RA),ha.dMin.Decscl,ha.scaleT(ha.wMin.t)),
+            ha.rdz2xy3d(ha.scaleRA(ha.wMin.RA),ha.dMin.Decscl,ha.scaleT(ha.wMin.t))],
+        xz1:[ha.rdz2xy3d(ha.scaleRA(ha.wMin.RA),ha.dMax.Decscl,ha.scaleT(ha.wMin.t)),
+            ha.rdz2xy3d(ha.scaleRA(ha.wMin.RA),ha.dMax.Decscl,ha.scaleT(ha.wMax.t)),
+            ha.rdz2xy3d(ha.scaleRA(ha.wMax.RA),ha.dMax.Decscl,ha.scaleT(ha.wMax.t)),
+            ha.rdz2xy3d(ha.scaleRA(ha.wMax.RA),ha.dMax.Decscl,ha.scaleT(ha.wMin.t)),
+            ha.rdz2xy3d(ha.scaleRA(ha.wMin.RA),ha.dMax.Decscl,ha.scaleT(ha.wMin.t))],
+        yz0:[ha.rdz2xy3d(ha.dMin.RAscl,ha.scaleDec(ha.wMin.Dec),ha.scaleT(ha.wMin.t)),
+            ha.rdz2xy3d(ha.dMin.RAscl,ha.scaleDec(ha.wMin.Dec),ha.scaleT(ha.wMax.t)),
+            ha.rdz2xy3d(ha.dMin.RAscl,ha.scaleDec(ha.wMax.Dec),ha.scaleT(ha.wMax.t)),
+            ha.rdz2xy3d(ha.dMin.RAscl,ha.scaleDec(ha.wMax.Dec),ha.scaleT(ha.wMin.t)),
+            ha.rdz2xy3d(ha.dMin.RAscl,ha.scaleDec(ha.wMin.Dec),ha.scaleT(ha.wMin.t))],
+        yz1:[ha.rdz2xy3d(ha.dMax.RAscl,ha.scaleDec(ha.wMin.Dec),ha.scaleT(ha.wMin.t)),
+            ha.rdz2xy3d(ha.dMax.RAscl,ha.scaleDec(ha.wMin.Dec),ha.scaleT(ha.wMax.t)),
+            ha.rdz2xy3d(ha.dMax.RAscl,ha.scaleDec(ha.wMax.Dec),ha.scaleT(ha.wMax.t)),
+            ha.rdz2xy3d(ha.dMax.RAscl,ha.scaleDec(ha.wMax.Dec),ha.scaleT(ha.wMin.t)),
+            ha.rdz2xy3d(ha.dMax.RAscl,ha.scaleDec(ha.wMin.Dec),ha.scaleT(ha.wMin.t))]
+    }
+    ha.projlines=projs;
+    // console.log('lines made:',pts,ha.projlines);
+}
+HATLASPlot.prototype.add3dLines = function(){
+    var ha=this;
+    ha.get3dLines()
+    for (p in ha.projlines){
+        pts=[];
+        for (pt in ha.projlines[p]){
+            pts.push({"x":ha.projlines[p][pt][0],"y":ha.projlines[p][pt][1]})
+        }
+        // for (l in pts)
+        //     console.log(l,pts[l])
+        ha.linefn=d3.svg.line()
+            .x(function(d){return ha.xScale3d(d.x);})
+            .y(function(d){return ha.yScale3d(d.y);})
+            .interpolate("linear");
+        ha.svg3d.append("path")
+            .attr("d",ha.linefn(pts))
+            .attr("stroke","#969696")
+            .attr("stroke-width",2)
+            .attr("stroke-dasharray","2,2")
+            .attr("fill","none")
+            .attr("class","proj3d-"+p);
+    }
+}
+HATLASPlot.prototype.move3dLines = function(){
+    ha.get3dLines()
+    for (p in ha.projlines){
+        pts=[];
+        for (pt in ha.projlines[p]){
+            pts.push({"x":ha.projlines[p][pt][0],"y":ha.projlines[p][pt][1]})
+        }
+        line=this.svg3d.select(".proj3d-"+p)
+            .transition().duration(1000)
+            .attr("d",ha.linefn(pts))
+    }
+}
 HATLASPlot.prototype.showTooltip = function(d){
     // console.log('2',d.name,tooltip);
     bh=this;
@@ -481,7 +557,22 @@ HATLASPlot.prototype.showTooltip = function(d){
        .style("opacity",0.5);
     this.tooltip.html(this.tttext(d))
        .style("left", function(d){return (d3.event.pageX) + "px";})
-       .style("top", function(d){return (d3.event.pageY) + "px";});
+       .style("top", function(d){return (d3.event.pageY) + "px";})
+       .style("width","auto")
+       .style("height","auto");
+    //    .style("width","auto").style("height","auto");
+}
+HATLASPlot.prototype.showTooltipFeat = function(d){
+    // console.log('2',d.name,tooltip);
+    bh=this;
+    this.tooltip.transition()
+       .duration(200)
+       .style("opacity",0.5);
+    this.tooltip.html(this.tttextFeat(d))
+       .style("left", function(d){return (d3.event.pageX) + "px";})
+       .style("top", function(d){return (d3.event.pageY) + "px";})
+       .style("width","200px")
+       .style("height","auto");
     //    .style("width","auto").style("height","auto");
 }
 HATLASPlot.prototype.hideTooltip = function() {
@@ -489,7 +580,24 @@ HATLASPlot.prototype.hideTooltip = function() {
         .duration(500).style("opacity", 0);
 }
 HATLASPlot.prototype.tttext = function(d){
-    return d.NAME_IAU;
+    txt= "<span class='tt-t'>"+d.NAME_IAU+"</span>";
+    txt=txt+"<br><span class='tt-h'>f<sub>250</sub>:</span> <span class='tt-i'>"+parseFloat(d.F250)+"</span>"
+    txt=txt+"<br><span class='tt-h'>f<sub>350</sub>:</span> <span class='tt-i'>"+parseFloat(d.F350)+"</span>"
+    txt=txt+"<br><span class='tt-h'>f<sub>550</sub>:</span> <span class='tt-i'>"+parseFloat(d.F500)+"</span>"
+    if (d.Z_SPEC>-50){
+        txt=txt+"<br><span class='tt-h'>z<sub>spec</sub>:</span> <span class='tt-i'>"+parseFloat(d.Z_SPEC)+"</span>"
+    }else{
+        txt=txt+"<br><span class='tt-h'>z<sub>phot</sub>:</span> <span class='tt-i'>"+parseFloat(d.Z_PHOT)+"</span>"
+    }
+    return txt
+}
+HATLASPlot.prototype.tttextFeat = function(d){
+    console.log(d)
+    if (d.type=='Messier'){return d.Name;}
+    else if (d.type=='GravLens'){
+        return d.NAME_IAU+'<br>z_opt='+parseFloat(d.z_Opt)+
+        '<br>z_submm='+parseFloat(d.z_submm)
+    }
 }
 HATLASPlot.prototype.addDots = function(){
     var ha=this;
@@ -546,16 +654,22 @@ HATLASPlot.prototype.addDots = function(){
         .attr("r",this.dotsize2d+8)
         .attr("cx",ha.xMap2d)
         .attr("cy",ha.yMap2d)
-        .style("stroke",function(d){return ha.color2d(ha.cValue2d(d));})
+        .style("stroke",function(d){return ha.color2dFeat();})
         .style("stroke-width",2)
         .style("fill","rgba(255,255,255,0)")
         // .attr("filter","url(#blur)")
-        .attr("opacity",function(d){return ha.get2dOpacityFeat(d)});
+        .attr("opacity",function(d){console.log(d);return ha.get2dOpacityFeat(d)})
+        .on("mouseover",function(d){ha.showTooltipFeat(d)})
+        .on("mouseout",function(){ha.hideTooltip()});
 
 }
 HATLASPlot.prototype.make2dPlot = function(){
     var ha=this;
     //add SVG
+    this.svg2dOuter = d3.select("#svg-2d-outer");
+    this.svg2dOuter
+        .style("width",this.svg2dSize)
+        .style("height",this.svg3dHeight)
     this.svg2dCont = d3.select("#svg-container-2d");
     this.svg2dCont
         .style("width",this.svg2dSize)
@@ -598,6 +712,7 @@ HATLASPlot.prototype.make2dPlot = function(){
 
     this.color2d = this.color3d;
     this.cValue2d = this.cValue3d;
+    this.color2dFeat = function(){return "#fff";}
     this.dotsize2d=3;
 
     //add groups
@@ -718,9 +833,10 @@ HATLASPlot.prototype.getBGCorners = function(){
 HATLASPlot.prototype.addSlice = function(){
     ha=this;
     this.add3dBox(this.getSliceCorners(),"slice-lines");
+    // this.get3dLines()
+    this.add3dLines();
     // change dot opacity within slice
     this.g3d.selectAll(".dot")
-        // .data(this.dataAll)
         .attr("opacity",function(d){return ha.get3dOpacity(d);});
 }
 HATLASPlot.prototype.moveSlice = function(){
@@ -742,6 +858,13 @@ HATLASPlot.prototype.moveSlice = function(){
         // .data(this.dataAll)
         .transition().duration(1000)
         .attr("opacity",function(d){return ha.get3dOpacity(d);});
+    lines = this.get3dLines();
+    for (l in lines){
+        line=svg3d.select(".3dproj-"+l)
+            .transition().duration(1000)
+            .attr("d",ha.linefn(lines[l]))
+    }
+    this.move3dLines();
 }
 HATLASPlot.prototype.addRAArrows = function(){
     var ha=this;
