@@ -641,6 +641,7 @@ HATLASPlot.prototype.addDots = function(){
         .attr("opacity",function(d){return ha.get2dOpacity(d)})
         .on("mouseover",function(d){ha.showTooltip(d)})
         .on("mouseout",function(){ha.hideTooltip()});
+        
     // add SDSS (45deg rotated rectangles)
     this.dots2dSDSS = this.g2dSDSS.selectAll(".dot")
         .data(this.dataSDSS)
@@ -738,6 +739,9 @@ HATLASPlot.prototype.make2dPlot = function(){
     this.cValue2d = this.cValue3d;
     this.color2dFeat = function(){return "#fff";}
     this.dotsize2d=3;
+    // claculate more realistic dot size
+    this.dotsize2d=(this.svg2dWidth-this.margin2d.left-this.margin2d.bottom)*(18/3600.)/ha.wRng.RA
+
 
     //add groups
     this.g2dHiZ = this.svg2d.append("g")
