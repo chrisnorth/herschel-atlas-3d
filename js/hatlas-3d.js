@@ -368,13 +368,18 @@ HATLASPlot.prototype.getAstroScales = function(){
     this.TMap3d = function(d) { return ha.TScale3d(ha.TValue3d(d));}
 }
 
+
 HATLASPlot.prototype.make3dPlot = function(){
     var ha=this;
     // this.color=d3.scale.category20();
     // this.cValue = function(d) {return d.t;};
-    this.color3d = d3.scale.linear()
-         .domain([ha.dMin.t,0.5*(ha.dMin.t+ha.dMax.t),ha.dMax.t])
-         .range(["#8888ff","#55ff55","#ff5555"]);
+    this.color3d = chroma.scale(["#8888ff","#55ff55","#ff5555"])
+        .domain([ha.dMin.t,0.5*(ha.dMin.t+ha.dMax.t),ha.dMax.t])
+        .mode('lab')
+        // .correctLightness();
+    // this.color3d = d3.scale.linear()
+    //      .domain([ha.dMin.t,0.5*(ha.dMin.t+ha.dMax.t),ha.dMax.t])
+    //      .range(["#8888ff","#55ff55","#ff5555"]);
     this.cValue3d = function(d) {return d.t;};
     this.dotsize3d=1.5;
     this.svg3dCont = d3.select("div#svg-container-3d")
