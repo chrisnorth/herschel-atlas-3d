@@ -182,3 +182,11 @@
   top:0;
   left:0;
 }
+span.tt-t{
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+span.tt-h{
+    font-weight:bold;
+}

@@ -554,7 +554,7 @@ HATLASPlot.prototype.showTooltip = function(d){
     bh=this;
     this.tooltip.transition()
        .duration(200)
-       .style("opacity",0.5);
+       .style("opacity",0.8);
     this.tooltip.html(this.tttext(d))
        .style("left", function(d){return (d3.event.pageX) + "px";})
        .style("top", function(d){return (d3.event.pageY) + "px";})
@@ -571,7 +571,7 @@ HATLASPlot.prototype.showTooltipFeat = function(d){
     this.tooltip.html(this.tttextFeat(d))
        .style("left", function(d){return (d3.event.pageX) + "px";})
        .style("top", function(d){return (d3.event.pageY) + "px";})
-       .style("width","200px")
+       .style("width","auto")
        .style("height","auto");
     //    .style("width","auto").style("height","auto");
 }
@@ -581,23 +581,40 @@ HATLASPlot.prototype.hideTooltip = function() {
 }
 HATLASPlot.prototype.tttext = function(d){
     txt= "<span class='tt-t'>"+d.NAME_IAU+"</span>";
-    txt=txt+"<br><span class='tt-h'>f<sub>250</sub>:</span> <span class='tt-i'>"+parseFloat(d.F250)+"</span>"
-    txt=txt+"<br><span class='tt-h'>f<sub>350</sub>:</span> <span class='tt-i'>"+parseFloat(d.F350)+"</span>"
-    txt=txt+"<br><span class='tt-h'>f<sub>550</sub>:</span> <span class='tt-i'>"+parseFloat(d.F500)+"</span>"
+    txt=txt+"<br><span class='tt-h'>f<sub>250</sub>:</span>&nbsp;"+
+        "<span class='tt-i'>"+parseFloat(d.F250).toPrecision(3)+" Jy</span>"
+    txt=txt+"<br><span class='tt-h'>f<sub>350</sub>:</span>&nbsp;"+
+        "<span class='tt-i'>"+parseFloat(d.F350).toPrecision(3)+" Jy</span>"
+    txt=txt+"<br><span class='tt-h'>f<sub>550</sub>:</span>&nbsp;"+
+        "<span class='tt-i'>"+parseFloat(d.F500).toPrecision(3)+" Jy</span>"
     if (d.Z_SPEC>-50){
-        txt=txt+"<br><span class='tt-h'>z<sub>spec</sub>:</span> <span class='tt-i'>"+parseFloat(d.Z_SPEC)+"</span>"
-    }else{
-        txt=txt+"<br><span class='tt-h'>z<sub>phot</sub>:</span> <span class='tt-i'>"+parseFloat(d.Z_PHOT)+"</span>"
+        txt=txt+"<br><span class='tt-h'>z<sub>spec</sub> (SDSS):</span>&nbsp;"+
+            "<span class='tt-i'>"+parseFloat(d.Z_SPEC).toPrecision(3)+"</span>"
     }
-    return txt
+    if (d.Z_PHOT<0){
+        txt=txt+"<br><span class='tt-h'>z<sub>phot</sub>:</span>&nbsp;"+
+            "<span class='tt-i'>&lt; 0</span>"
+    }else{
+        txt=txt+"<br><span class='tt-h'>z<sub>phot</sub>:</span>&nbsp;"+
+            "<span class='tt-i'>"+parseFloat(d.Z_PHOT).toPrecision(3)+"</span>"
+    }
+    txt=txt+"<br><span class='tt-h'>time:</span>&nbsp;"+
+        "<span class='tt-i'>"+parseFloat(d.t).toPrecision(3)+"</span>"
+    return txt;
 }
 HATLASPlot.prototype.tttextFeat = function(d){
     console.log(d)
-    if (d.type=='Messier'){return d.Name;}
+    if (d.type=='Messier'){txt= d.Name;}
     else if (d.type=='GravLens'){
-        return d.NAME_IAU+'<br>z_opt='+parseFloat(d.z_Opt)+
-        '<br>z_submm='+parseFloat(d.z_submm)
+        txt="<span class='tt-t'>Gravitational Lens</span>"
+        txt=txt+"<br><span class='tt-h'>Name:</span>&nbsp;"+
+            "<span class='tt-i'>"+d.NAME_IAU.replace(' ','&nbsp;')+"</span>";
+        txt=txt+"<br><span class='tt-h'>z<sub>opt</sub>:</span>&nbsp;"+
+            "<span class='tt-i'>"+parseFloat(d.z_Opt).toPrecision(3)+"</span>";
+        txt=txt+"<br><span class='tt-h'>z<sub>sub-mm</sub>:</span>&nbsp;"+
+            "<span class='tt-i'>"+parseFloat(d.z_submm).toPrecision(3)+"</span>";
     }
+    return txt;
 }
 HATLASPlot.prototype.addDots = function(){
     var ha=this;
@@ -640,7 +657,9 @@ HATLASPlot.prototype.addDots = function(){
         .style("stroke","rgba(255,255,0,255)")
         .style("stroke-width",2)
         .style("fill","rgba(0,0,0,0)")
-        .attr("opacity",0.5);
+        .attr("opacity",0.5)
+        .on("mouseover",function(d){ha.showTooltip(d)})
+        .on("mouseout",function(){ha.hideTooltip()});
 
     // add Features
     this.dots2dFeat = this.g2dFeat.selectAll(".dot")
