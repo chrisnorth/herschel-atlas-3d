@@ -641,31 +641,54 @@ HATLASPlot.prototype.addDots = function(){
         .attr("opacity",function(d){return ha.get2dOpacity(d)})
         .on("mouseover",function(d){ha.showTooltip(d)})
         .on("mouseout",function(){ha.hideTooltip()});
-        
-    // add SDSS (45deg rotated rectangles)
-    this.dots2dSDSS = this.g2dSDSS.selectAll(".dot")
+
+    // // add SDSS (45deg rotated rectangles)
+    // this.dots2dSDSS = this.g2dSDSS.selectAll(".marker")
+    //     .data(this.dataSDSS)
+    // this.dots2dSDSS.enter()
+    //     .append("rect")
+    //     .attr("class","marker")
+    // this.dots2dSDSS.exit().remove()
+    // this.dots2dSDSS
+    //     .attr("x",0)
+    //     .attr("y",0)
+    //     .attr("width",2*(ha.dotsize2d+5))
+    //     .attr("height",2*(ha.dotsize2d+5))
+    //     .attr("transform",function(d){
+    //         return "translate("+(-(ha.dotsize2d+5))+","+(-(ha.dotsize2d+5))+")"+
+    //         "rotate(45) "+
+    //         "translate ("+(Math.sqrt(0.5)*(ha.xMap2d(d)+ha.yMap2d(d)+0.5*(ha.dotsize2d+5)))+","+
+    //         (Math.sqrt(0.5)*(ha.yMap2d(d)-ha.xMap2d(d)-Math.sqrt(2)*(ha.dotsize2d+5)))+")"
+    //     })
+    //     .style("stroke","rgba(255,255,0,255)")
+    //     .style("stroke-width",2)
+    //     .style("fill","rgba(0,0,0,0)")
+    //     .attr("opacity",0.5)
+    //     .on("mouseover",function(d){ha.showTooltip(d)})
+    //     .on("mouseout",function(){ha.hideTooltip()});
+
+    // add SDSS (45deg lines)
+    this.dots2dSDSS = this.g2dSDSS.selectAll(".marker")
         .data(this.dataSDSS)
     this.dots2dSDSS.enter()
-        .append("rect")
-        .attr("class","dot")
+        .append("g")
+        .attr("class","marker")
     this.dots2dSDSS.exit().remove()
     this.dots2dSDSS
-        .attr("x",0)
-        .attr("y",0)
-        .attr("width",2*(ha.dotsize2d+5))
-        .attr("height",2*(ha.dotsize2d+5))
-        .attr("transform",function(d){
-            return "translate("+(-(ha.dotsize2d+5))+","+(-(ha.dotsize2d+5))+")"+
-            "rotate(45) "+
-            "translate ("+(Math.sqrt(0.5)*(ha.xMap2d(d)+ha.yMap2d(d)+0.5*(ha.dotsize2d+5)))+","+
-            (Math.sqrt(0.5)*(ha.yMap2d(d)-ha.xMap2d(d)-Math.sqrt(2)*(ha.dotsize2d+5)))+")"
-        })
-        .style("stroke","rgba(255,255,0,255)")
-        .style("stroke-width",2)
-        .style("fill","rgba(0,0,0,0)")
-        .attr("opacity",0.5)
+        .attr("transform",function(d){ return "translate ("+(ha.xMap2d(d))+","+(ha.yMap2d(d))+")";})
         .on("mouseover",function(d){ha.showTooltip(d)})
         .on("mouseout",function(){ha.hideTooltip()});
+    for (ang=45;ang<360;ang=ang+90){
+        sinA=Math.sin(ang*Math.PI/180.)
+        cosA=Math.cos(ang*Math.PI/180.)
+        console.log('ang',ang,sinA,cosA);
+        this.dots2dSDSS.append("line")
+            .attr("x1",sinA*(ha.dotsize2d+5)).attr("x2",sinA*(ha.dotsize2d+10))
+            .attr("y1",cosA*(ha.dotsize2d+5)).attr("y2",cosA*(ha.dotsize2d+10))
+            .style("stroke","rgba(255,255,0,255)")
+            .style("stroke-width",3)
+            .attr("opacity",0.5);
+    }
 
     // add Features
     this.dots2dFeat = this.g2dFeat.selectAll(".dot")
