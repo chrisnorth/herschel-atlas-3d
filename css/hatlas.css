@@ -123,8 +123,9 @@
 .axis .axis-label{
     font-size:1.5em;
 }
-.tick line {
+.tick line{
     opacity:1;
+    color:#969696;
 }
 /*Info panel*/
 #info-close{
