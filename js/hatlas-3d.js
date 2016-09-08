@@ -1143,8 +1143,12 @@ HATLASPlot.prototype.tttext = function(d){
     }
     if (d.z<0){
         txt=txt+"<br><span class='tt-h'>z<sub>sub-mm</sub>:</span>&nbsp;"+
+            "<span class='tt-i'>&lt; 9</span>"
+    }else{
+        txt=txt+"<br><span class='tt-h'>z<sub>sub-mm</sub>:</span>&nbsp;"+
             "<span class='tt-i'>"+parseFloat(d.z).toPrecision(3)+"</span>"
-    }if (d.Z_PHOT<0){
+    }
+    if (d.Z_PHOT<0){
         txt=txt+"<br><span class='tt-h'>z<sub>phot</sub>:</span>&nbsp;"+
             "<span class='tt-i'>&lt; 0</span>"
     }else{
