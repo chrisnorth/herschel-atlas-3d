@@ -223,7 +223,7 @@ HATLASPlot.prototype.scaleWindow = function(){
     this.fValue = function(d){return Math.log10(d.F250)}
     this.fScale2d = d3.scale.linear()
         .domain([Math.log10(this.dMin.F250),Math.log10(this.dMax.F250)])
-        .range([0.4,1])
+        .range([0.2,1])
 }
 HATLASPlot.prototype.filterFlux = function(){
     // filter to return data in window
@@ -1127,9 +1127,10 @@ HATLASPlot.prototype.showTooltipFeat = function(d){
 }
 HATLASPlot.prototype.hideTooltip = function() {
     this.tooltip.transition()
-        .duration(500).style("opacity", 0);
+        .duration(500).style("", 0);
 }
 HATLASPlot.prototype.tttext = function(d){
+    console.log(d.NAME_IAU,d.z);
     txt= "<span class='tt-t'>"+d.NAME_IAU+"</span>";
     txt=txt+"<br><span class='tt-h'>f<sub>250</sub>:</span>&nbsp;"+
         "<span class='tt-i'>"+parseFloat(d.F250).toPrecision(3)+" Jy</span>"
@@ -1137,26 +1138,24 @@ HATLASPlot.prototype.tttext = function(d){
         "<span class='tt-i'>"+parseFloat(d.F350).toPrecision(3)+" Jy</span>"
     txt=txt+"<br><span class='tt-h'>f<sub>500</sub>:</span>&nbsp;"+
         "<span class='tt-i'>"+parseFloat(d.F500).toPrecision(3)+" Jy</span>"
-    if (d.Z_SPEC>-50){
-        txt=txt+"<br><span class='tt-h'>z<sub>spec</sub> (SDSS):</span>&nbsp;"+
-            "<span class='tt-i'>"+parseFloat(d.Z_SPEC).toPrecision(3)+"</span>"
-    }
-    if (d.z<0){
-        txt=txt+"<br><span class='tt-h'>z<sub>sub-mm</sub>:</span>&nbsp;"+
-            "<span class='tt-i'>&lt; 9</span>"
-    }else{
-        txt=txt+"<br><span class='tt-h'>z<sub>sub-mm</sub>:</span>&nbsp;"+
+
+    txt=txt+"<br><span class='tt-h'>Redshift:</span>&nbsp;"+
             "<span class='tt-i'>"+parseFloat(d.z).toPrecision(3)+"</span>"
-    }
-    if (d.Z_PHOT<0){
-        txt=txt+"<br><span class='tt-h'>z<sub>phot</sub>:</span>&nbsp;"+
-            "<span class='tt-i'>&lt; 0</span>"
-    }else{
-        txt=txt+"<br><span class='tt-h'>z<sub>phot</sub>:</span>&nbsp;"+
-            "<span class='tt-i'>"+parseFloat(d.Z_PHOT).toPrecision(3)+"</span>"
-    }
-    txt=txt+"<br><span class='tt-h'>time:</span>&nbsp;"+
-        "<span class='tt-i'>"+parseFloat(d.t).toPrecision(3)+"</span>"
+    txt=txt+"<br><span class='tt-h'>Redshift type:</span>&nbsp;"+
+            "<span class='tt-i'>"+d.Z_type+"</span>"
+    // if (d.Z_PHOT<0){
+    //     txt=txt+"<br><span class='tt-h'>z<sub>phot</sub>:</span>&nbsp;"+
+    //         "<span class='tt-i'>&lt; 0</span>"
+    // }else{
+    //     txt=txt+"<br><span class='tt-h'>z<sub>phot</sub>:</span>&nbsp;"+
+    //         "<span class='tt-i'>"+parseFloat(d.Z_PHOT).toPrecision(3)+"</span>"
+    // }
+    // if (d.Z_SPEC>-50){
+    //     txt=txt+"<br><span class='tt-h'>z<sub>spec</sub> (SDSS):</span>&nbsp;"+
+    //         "<span class='tt-i'>"+parseFloat(d.Z_SPEC).toPrecision(3)+"</span>"
+    // }
+    txt=txt+"<br><span class='tt-h'>Lookback time:</span>&nbsp;"+
+        "<span class='tt-i'>"+parseFloat(d.t).toPrecision(3)+" Gyr</span>"
     txt=txt+"<br><span class='tt-h'>RA/Dec:</span>&nbsp;"+
         "<span class='tt-i'>"+parseFloat(d.RA).toFixed(2)+","+parseFloat(d.Dec).toFixed(2)+"</span>"
     return txt;
