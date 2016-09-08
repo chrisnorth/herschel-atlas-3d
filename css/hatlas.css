@@ -16,6 +16,11 @@
     width:100%;
     height:100%;
 }
+.outer-div{
+    position: relative;
+    float:left;
+    display:inline-block;
+}
 .svg-container {
     display: inline-block;
     position: relative;
@@ -27,14 +32,52 @@
     overflow: hidden;
     border: solid black 1px;
 }
-.button-RA-cont{
+.button-Nav-cont{
     position: absolute;
     height: 10%;
-    top:50%;
 }
-.button-RA-cont img{
+.button-Nav-cont img{
     height:100%;
     /*cursor:pointer;*/
+}
+#button-Nav{
+    height:5%;
+    width:20%;
+    top:5%;
+    left:12.5%;
+    text-align:center;
+}
+#button-Dec-up{
+    height:5%;
+    top:10%;
+    left:20%;
+}
+#button-Dec-down{
+    height:5%;
+    top:20%;
+    left:20%;
+}
+#button-RA-left{
+    height:5%;
+    top:15%;
+    left:15%;
+}
+#button-RA-right{
+    height:5%;
+    top:15%;
+    left:25%;
+}
+#button-z-up{
+    height:5%;
+    top:7.5%;
+    left:27.5%;
+    transform:rotate(-45deg);
+}
+#button-z-down{
+    height:5%;
+    top:22.5%;
+    left:12.5%;
+    transform:rotate(-45deg);
 }
 .buttons-container{
     width:auto;
@@ -64,9 +107,6 @@
 #div-z-up{
     float:right;
 }
-.button-cont{
-    float:left;
-}
 .axis path,
 .axis line {
   fill: none;
@@ -83,6 +123,71 @@
 .axis .axis-label{
     font-size:1.5em;
 }
-.tick line {
+.tick line{
     opacity:1;
+    color:#969696;
+}
+/*Info panel*/
+#info-close{
+    position:absolute;
+    width:30px;
+    height:30px;
+    right:-15px;
+    top:-10px;
+    cursor:pointer;
+}
+#info-bg{
+    position:fixed;
+    width:100%;
+    height:0;
+    left:0;
+    top:0;
+    background-color: #888;
+    opacity:0;
+}
+#info-outer{
+    position: fixed;
+    width: 200px;
+    height: 28px;
+    background-color:rgba(255,255,255,1);
+    border:solid rgba(0,0,0,1) 5px;
+    border-radius:20px;
+    padding:5px;
+    opacity:0;
+}
+#info-inner{
+    width:100%;
+    height:auto;
+    padding-bottom:10px;
+}
+.info-title{
+    width:100%;
+    text-align:center;
+    font-size:2em;
+    padding-bottom:10px;
+}
+.info-info{
+    font-size:1em;
+}
+#tooltip {
+  position: absolute;
+  width: 0px;
+  height: 0px;
+  pointer-events: none;
+  background-color:rgba(255,255,255,1);
+  border:solid rgba(0,0,0,0.5) 1px;
+  border-radius:10px;
+  padding:5px;
+  color:black;
+  opacity:0.5;
+  top:0;
+  left:0;
+}
+span.tt-t{
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+span.tt-h{
+    font-weight:bold;
 }

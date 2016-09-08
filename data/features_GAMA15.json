@@ -1,0 +1,197 @@
+[
+    {
+        "F250_mJy": "801.8err6.6", 
+        "Rmag": "20.6", 
+        "Sep_arcsec": "1.58", 
+        "z_submm": "1.027", 
+        "F350_mJy": "438.5err7.5", 
+        "F100_mJy": "911err29", 
+        "Lensing_rank": "A", 
+        "F500_mJy": "199.8err7.7", 
+        "Field": "GAMA15", 
+        "Magnification": "10.8err0.7", 
+        "Reliability": "0.985", 
+        "H-ATLAS_Name": "M14", 
+        "RA": 217.39717099999999, 
+        "Lens": "1", 
+        "Dec": -0.47681599899999999, 
+        "type": "GravLens", 
+        "z_Opt": "0.2184", 
+        "F160_mJy": "1254err34", 
+        "NAME_IAU": "HATLAS J142935.3-002836"
+    }, 
+    {
+        "F250_mJy": "188.6err7.4", 
+        "Rmag": "22.2", 
+        "Sep_arcsec": "1.12", 
+        "z_submm": "2.4782", 
+        "F350_mJy": "217.0err8.1", 
+        "F100_mJy": "<135", 
+        "Lensing_rank": "A", 
+        "F500_mJy": "176.4err8.7", 
+        "Field": "GAMA15", 
+        "Magnification": ">1.8", 
+        "Reliability": "0.98", 
+        "H-ATLAS_Name": "B13", 
+        "RA": 213.46662900000001, 
+        "Lens": "1", 
+        "Dec": -0.0074539999499999999, 
+        "type": "GravLens", 
+        "z_Opt": "0.547", 
+        "F160_mJy": "100err50", 
+        "NAME_IAU": "HATLAS J141351.9-000026"
+    }, 
+    {
+        "Name": "IC986", 
+        "ObjectType": "Unknown", 
+        "IntegratedMagnitude": "--", 
+        "RA": "212.85", 
+        "Dec": "1.33333333333", 
+        "type": "IC", 
+        "Size": "--"
+    }, 
+    {
+        "Name": "NGC5501", 
+        "ObjectType": "Galaxy", 
+        "IntegratedMagnitude": "15.0", 
+        "RA": "213.1", 
+        "Dec": "1.26666666667", 
+        "type": "NGC", 
+        "Size": "--"
+    }, 
+    {
+        "Name": "IC992", 
+        "ObjectType": "Galaxy", 
+        "IntegratedMagnitude": "15.0", 
+        "RA": "214.575", 
+        "Dec": "0.883333333333", 
+        "type": "IC", 
+        "Size": "1.6"
+    }, 
+    {
+        "Name": "NGC5584", 
+        "ObjectType": "Galaxy", 
+        "IntegratedMagnitude": "12.0", 
+        "RA": "215.6", 
+        "Dec": "-0.383333333333", 
+        "type": "NGC", 
+        "Size": "3.3"
+    }, 
+    {
+        "Name": "IC1010", 
+        "ObjectType": "Galaxy", 
+        "IntegratedMagnitude": "15.0", 
+        "RA": "216.825", 
+        "Dec": "1.03333333333", 
+        "type": "IC", 
+        "Size": "2.3"
+    }, 
+    {
+        "Name": "IC1011", 
+        "ObjectType": "Galaxy", 
+        "IntegratedMagnitude": "15.0", 
+        "RA": "217.025", 
+        "Dec": "1.0", 
+        "type": "IC", 
+        "Size": "0.4"
+    }, 
+    {
+        "Name": "NGC5632", 
+        "ObjectType": "Galaxy", 
+        "IntegratedMagnitude": "--", 
+        "RA": "217.075", 
+        "Dec": "-0.2", 
+        "type": "NGC", 
+        "Size": "--"
+    }, 
+    {
+        "Name": "NGC5651", 
+        "ObjectType": "?", 
+        "IntegratedMagnitude": "--", 
+        "RA": "217.825", 
+        "Dec": "-0.933333333333", 
+        "type": "NGC", 
+        "Size": "--"
+    }, 
+    {
+        "Name": "NGC5658", 
+        "ObjectType": "Galaxy", 
+        "IntegratedMagnitude": "14.0", 
+        "RA": "218.1", 
+        "Dec": "0.266666666667", 
+        "type": "NGC", 
+        "Size": "--"
+    }, 
+    {
+        "Name": "NGC5680", 
+        "ObjectType": "Galaxy", 
+        "IntegratedMagnitude": "15.0", 
+        "RA": "218.95", 
+        "Dec": "-0.05", 
+        "type": "NGC", 
+        "Size": "--"
+    }, 
+    {
+        "Name": "NGC5691", 
+        "ObjectType": "Galaxy", 
+        "IntegratedMagnitude": "13.0", 
+        "RA": "219.475", 
+        "Dec": "-0.4", 
+        "type": "NGC", 
+        "Size": "2.0"
+    }, 
+    {
+        "Name": "NGC5705", 
+        "ObjectType": "Galaxy", 
+        "IntegratedMagnitude": "14.0", 
+        "RA": "219.95", 
+        "Dec": "-0.716666666667", 
+        "type": "NGC", 
+        "Size": "2.8"
+    }, 
+    {
+        "Name": "NGC5713", 
+        "ObjectType": "Galaxy", 
+        "IntegratedMagnitude": "11.4", 
+        "RA": "220.05", 
+        "Dec": "-0.283333333333", 
+        "type": "NGC", 
+        "Size": "2.8"
+    }, 
+    {
+        "Name": "NGC5719", 
+        "ObjectType": "Galaxy", 
+        "IntegratedMagnitude": "14.0", 
+        "RA": "220.225", 
+        "Dec": "-0.316666666667", 
+        "type": "NGC", 
+        "Size": "3.4"
+    }, 
+    {
+        "Name": "NGC5733", 
+        "ObjectType": "Galaxy", 
+        "IntegratedMagnitude": "15.0", 
+        "RA": "220.7", 
+        "Dec": "-0.35", 
+        "type": "NGC", 
+        "Size": "1.3"
+    }, 
+    {
+        "Name": "NGC5750", 
+        "ObjectType": "Galaxy", 
+        "IntegratedMagnitude": "11.6", 
+        "RA": "221.55", 
+        "Dec": "-0.216666666667", 
+        "type": "NGC", 
+        "Size": "2.9"
+    }, 
+    {
+        "Name": "IC1054", 
+        "ObjectType": "Galaxy", 
+        "IntegratedMagnitude": "15.0", 
+        "RA": "221.625", 
+        "Dec": "1.26666666667", 
+        "type": "IC", 
+        "Size": "1.2"
+    }
+]
