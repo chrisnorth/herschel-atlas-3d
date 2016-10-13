@@ -1102,6 +1102,7 @@ HATLASPlot.prototype.move3dLines = function(){
 HATLASPlot.prototype.showTooltip = function(d){
     // console.log('2',d.name,tooltip);
     bh=this;
+    console.log('Source:',d.NAME_IAU,d.z);
     this.tooltip.transition()
        .duration(200)
        .style("opacity",0.8);
@@ -1115,6 +1116,7 @@ HATLASPlot.prototype.showTooltip = function(d){
 HATLASPlot.prototype.showTooltipFeat = function(d){
     // console.log('2',d.name,tooltip);
     bh=this;
+    console.log('Feature:',d.z);
     this.tooltip.transition()
        .duration(200)
        .style("opacity",0.8);
@@ -1127,18 +1129,19 @@ HATLASPlot.prototype.showTooltipFeat = function(d){
 }
 HATLASPlot.prototype.hideTooltip = function() {
     this.tooltip.transition()
-        .duration(500).style("", 0);
+        .duration(500).style("opacity", 0);
 }
 HATLASPlot.prototype.tttext = function(d){
-    console.log(d.NAME_IAU,d.z);
     txt= "<span class='tt-t'>"+d.NAME_IAU+"</span>";
-    txt=txt+"<br><span class='tt-h'>f<sub>250</sub>:</span>&nbsp;"+
-        "<span class='tt-i'>"+parseFloat(d.F250).toPrecision(3)+" Jy</span>"
-    txt=txt+"<br><span class='tt-h'>f<sub>350</sub>:</span>&nbsp;"+
-        "<span class='tt-i'>"+parseFloat(d.F350).toPrecision(3)+" Jy</span>"
-    txt=txt+"<br><span class='tt-h'>f<sub>500</sub>:</span>&nbsp;"+
-        "<span class='tt-i'>"+parseFloat(d.F500).toPrecision(3)+" Jy</span>"
-
+    var bands=['250','350','500']
+    for (b=0;b<bands.length;b++){
+        txt=txt+"<br><span class='tt-h'>f<sub>"+bands[b]+"</sub>:</span>&nbsp;"+
+            "<span class='tt-i'>"+parseFloat(d["F"+bands[b]]*1000).toFixed(0)+" mJy</span>"
+        // txt=txt+"<br><span class='tt-h'>f<sub>350</sub>:</span>&nbsp;"+
+        //     "<span class='tt-i'>"+parseFloat(d.F350*1000).toFixed(0)+" mJy</span>"
+        // txt=txt+"<br><span class='tt-h'>f<sub>500</sub>:</span>&nbsp;"+
+        //     "<span class='tt-i'>"+parseFloat(d.F500*1000).toFixed(0)+" mJy</span>"
+    }
     txt=txt+"<br><span class='tt-h'>Redshift:</span>&nbsp;"+
             "<span class='tt-i'>"+parseFloat(d.z).toPrecision(3)+"</span>"
     txt=txt+"<br><span class='tt-h'>Redshift type:</span>&nbsp;"+
